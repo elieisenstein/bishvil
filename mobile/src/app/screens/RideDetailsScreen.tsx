@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { ActivityIndicator, Card, Text } from "react-native-paper";
+import { ActivityIndicator, Button, Card, Text, useTheme } from "react-native-paper";
 import { RouteProp, useRoute } from "@react-navigation/native";
 
 import { formatDateTimeLocal } from "../../lib/datetime";
 import { supabase } from "../../lib/supabase";
 import type { Ride } from "../../lib/rides";
 import type { FeedStackParamList } from "../navigation/AppNavigator";
-import { Button, Snackbar } from "react-native-paper";
 import { joinOrRequestRide, leaveRide, getMyRideParticipantStatus, getRideParticipantCount } from "../../lib/rides";
 import type { ParticipantStatus } from "../../lib/rides";
 
@@ -24,6 +23,7 @@ export default function RideDetailsScreen() {
   const [myStatus, setMyStatus] = useState<ParticipantStatus | null>(null);
   const [joinedCount, setJoinedCount] = useState<number | null>(null);
   const [joining, setJoining] = useState(false);
+  const theme = useTheme();
 
 
   useEffect(() => {
@@ -63,44 +63,7 @@ export default function RideDetailsScreen() {
     };
   }, [rideId]);
 
-  useEffect(() => {
-  let mounted = true;
-
-  (async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("rides")
-        .select("*")
-        .eq("id", rideId)
-        .single();
-
-      if (error) throw new Error(error.message);
-      if (mounted) setRide(data as Ride);
-
-      const [status, count] = await Promise.all([
-        getMyRideParticipantStatus(rideId),
-        getRideParticipantCount(rideId),
-      ]);
-
-      if (mounted) {
-        setMyStatus(status);
-        setJoinedCount(count);
-      }
-    } catch (e: any) {
-      console.log("RideDetails load error:", e?.message ?? e);
-      if (mounted) setRide(null);
-    } finally {
-      if (mounted) setLoading(false);
-    }
-  })();
-
-  return () => {
-    mounted = false;
-  };
-}, [rideId]);
-
-
+  
 async function handleJoin() {
   if (!ride) return;
 
@@ -145,27 +108,39 @@ async function handleLeave() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <View
+        style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: theme.colors.background,
+        }}
+        >
         <ActivityIndicator />
-      </View>
+        </View>
     );
   }
 
   if (!ride) {
     return (
-      <View style={{ padding: 16 }}>
-        <Text>Ride not found (or you don’t have permission).</Text>
-      </View>
+        <View style={{ flex: 1, padding: 16, backgroundColor: theme.colors.background }}>
+        <Text style={{ color: theme.colors.onBackground }}>
+            Ride not found (or you don’t have permission).
+        </Text>
+        </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 24 }}>
+    <ScrollView
+        style={{ flex: 1, backgroundColor: theme.colors.background }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 24 }}
+    >
       <Card>
         <Card.Content style={{ gap: 8 }}>
-          <Text variant="titleLarge">
+           <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>
             {ride.ride_type} · {ride.skill_level}
-          </Text>
+           </Text>
 
           <Text style={{ opacity: 0.8 }}>
             When: {formatDateTimeLocal(ride.start_at)}
@@ -194,7 +169,7 @@ async function handleLeave() {
             </Text>
           )}
 
-          {ride.notes ? <Text>{ride.notes}</Text> : null}
+          {ride.notes ? <Text style={{ opacity: 0.9 }}>{ride.notes}</Text> : null}
 
           <View style={{ flexDirection: "row", gap: 12, marginTop: 12 }}>
 

@@ -47,9 +47,51 @@ export default function FeedScreen() {
     Drag down to refresh · Upcoming rides
   </Text>
 
-    <View style={{ marginTop: 12, gap: 12 }}>
-      {/* ...rest unchanged... */}
-    </View>
+<View style={{ marginTop: 12, gap: 12 }}>
+  {rides.length === 0 ? (
+    <Card>
+      <Card.Content>
+        <Text>No rides yet. Create one from the Create tab.</Text>
+      </Card.Content>
+    </Card>
+  ) : (
+    rides.map((r) => (
+      <Card
+        key={r.id}
+        onPress={() => navigation.navigate("RideDetails", { rideId: r.id })}
+      >
+        <Card.Content style={{ gap: 6 }}>
+          <Text variant="titleMedium">
+            {r.ride_type} · {r.skill_level}
+          </Text>
+
+          <Text style={{ opacity: 0.8 }}>
+            When: {formatDateTimeLocal(r.start_at)}
+          </Text>
+
+          <Text style={{ opacity: 0.8 }}>
+            Where:{" "}
+            {r.start_name ??
+              `${r.start_lat.toFixed(4)}, ${r.start_lng.toFixed(4)}`}
+          </Text>
+
+          <Text style={{ opacity: 0.8 }}>
+            Group: {r.join_mode} · max {r.max_participants}
+          </Text>
+
+          {r.distance_km != null || r.elevation_m != null ? (
+            <Text style={{ opacity: 0.8 }}>
+              {r.distance_km != null ? `${r.distance_km} km` : ""}
+              {r.distance_km != null && r.elevation_m != null ? " · " : ""}
+              {r.elevation_m != null ? `${r.elevation_m} m` : ""}
+            </Text>
+          ) : null}
+        </Card.Content>
+      </Card>
+    ))
+  )}
+</View>
+
   </ScrollView>
 );
 }
