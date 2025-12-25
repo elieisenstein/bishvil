@@ -13,8 +13,14 @@ export default function StepWhen({
 }) {
   const theme = useTheme();
   
-  // Get current selected date or default to 1 hour from now
-  const selectedDate = draft.start_at ? new Date(draft.start_at) : new Date(Date.now() + 60 * 60 * 1000);
+  // Get current selected date or default to 1 hour from now IN LOCAL TIME
+  const getDefaultDate = () => {
+    const now = new Date();
+    now.setHours(now.getHours() + 1, 0, 0, 0); // 1 hour from now, round to hour
+    return now;
+  };
+  
+  const selectedDate = draft.start_at ? new Date(draft.start_at) : getDefaultDate();
   
   // Track if pickers are visible (Android shows modal, iOS shows inline)
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -30,6 +36,14 @@ export default function StepWhen({
       // Preserve the time, only update the date
       const newDate = new Date(selectedDate);
       newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+      
+      // Validate: don't allow dates/times in the past
+      const now = new Date();
+      if (newDate < now) {
+        alert("Cannot create rides in the past. Please select a future date/time.");
+        return;
+      }
+      
       onChange({ start_at: newDate.toISOString() });
     }
   }
@@ -44,6 +58,15 @@ export default function StepWhen({
       // Preserve the date, only update the time
       const newDate = new Date(selectedDate);
       newDate.setHours(date.getHours(), date.getMinutes(), 0, 0);
+      
+      // Validate: don't allow times in the past
+      const now = new Date();
+      if (newDate < now) {
+        // Don't update if time is in the past
+        alert("Cannot create rides in the past. Please select a future time.");
+        return;
+      }
+      
       onChange({ start_at: newDate.toISOString() });
     }
   }
@@ -116,7 +139,7 @@ export default function StepWhen({
           Selected:
         </Text>
         <Text variant="titleMedium" style={{ color: theme.colors.onBackground }}>
-          {selectedDate.toLocaleDateString([], { 
+          {selectedDate.toLocaleDateString('he-IL', { 
             weekday: 'short',
             month: 'short', 
             day: 'numeric',
@@ -124,7 +147,7 @@ export default function StepWhen({
           })}
         </Text>
         <Text variant="titleLarge" style={{ color: theme.colors.onBackground }}>
-          {selectedDate.toLocaleTimeString([], { 
+          {selectedDate.toLocaleTimeString('he-IL', { 
             hour: '2-digit', 
             minute: '2-digit'
           })}

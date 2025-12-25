@@ -263,6 +263,167 @@ Completed Tasks:
 ✅ Bonus: Owner cancel functionality
 ✅ Bonus: DateTime picker for ride creation
 
+Session Summary for Status Doc
+M1 Completion - Tasks #3, #4, and UI Polish ✅
+
+M1 Task #3: Quick Filter Toggles - COMPLETE ✅
+Implemented:
+
+Filter system architecture: Added RideFilters type and listFilteredRides() function in rides.ts
+Smart defaults: All ride types, all skills, next 7 days (hardcoded for MVP, will use profile data post-M1)
+Filter summary bar: Compact display at top of Feed showing active filters (e.g., "Filters: Trail • Intermediate • 7 days [Edit]")
+Filter modal: Bottom sheet with checkboxes for ride types (multi-select), skill level (single-select), and time range (single-select)
+Dynamic updates: Summary text updates based on selections, feed auto-reloads on Apply
+Reset functionality: One-tap reset to defaults
+Client-side distance calculation: Haversine formula implemented for future location filtering (not exposed in UI yet)
+
+Design decisions:
+
+Location filter omitted from MVP (deferred until features like notifications/events require it)
+Multi-select for ride types (users ride multiple types)
+Single-select for skill level (prevents nonsensical "Beginner + Advanced" combinations)
+Empty = "All" for cleaner UX (unchecking all types = show all types)
+
+
+M1 Task #4: Profile Onboarding Fields - COMPLETE ✅
+Database schema updates:
+
+Added birth_year (integer) and gender (text) columns to profiles table
+Utilized existing columns: ride_type, skill, pace (already in schema)
+home_region omitted from MVP (reduces onboarding friction, GPS better for location)
+
+profile.ts updates:
+
+Updated Profile type with all new fields
+Created ProfileUpdateInput type for partial updates
+Replaced updateMyDisplayName() with general updateMyProfile() function
+Critical robustness fixes:
+
+Changed fetchMyProfile() return type to Profile | null (handles missing profiles gracefully)
+Changed .single() to .maybeSingle() (no crash when profile row doesn't exist)
+Changed update() to upsert() (creates profile if missing, works across environments)
+Added rideTypesToString() and stringToRideTypes() helpers for array/string conversion
+Added .trim() to parsing functions to prevent whitespace bugs
+
+
+
+ProfileScreen.tsx features:
+
+Display Name: Text input (required for save)
+Ride Types: Multi-select chips (XC, Trail, Enduro, Gravel)
+Skill Level: Single-select chips (Beginner, Intermediate, Advanced)
+Pace: Single-select chips (Slow, Moderate, Fast)
+Birth Year: Number input (4 digits)
+Gender: Optional single-select chips (Male, Female, Skip)
+Scrollable layout with dividers, loading/saving states
+Null-safe initialization for new users without profiles
+
+UI polish:
+
+Chips use primary orange color when selected (matches app theme)
+No checkmarks on chips (prevents layout shift)
+White text on selected chips for contrast
+Consistent visual language throughout app
+
+
+UI Polish & Bug Fixes ✅
+Tab Navigation:
+
+Added professional icons: bike (Feed), plus-circle (Create), account-circle (Profile)
+Color scheme: Orange for active tab, gray for inactive
+Icons from React Native Paper Icon library
+
+DateTime Picker:
+
+Replaced hardcoded preset buttons with full date/time pickers
+Uses @react-native-community/datetimepicker (native iOS/Android pickers)
+Default: Current time + 1 hour, rounded to hour
+Timezone fix: Proper handling of Israel timezone (UTC+2 winter, UTC+3 summer)
+Validation: Blocks creating rides in the past (date picker minimum + time validation with alerts)
+Auto-reset: Wizard resets to current time when navigating back to Create tab using useFocusEffect
+
+Empty States:
+
+Feed: Large bike icon, "No rides found" message, "Adjust Filters" button
+RideDetails participants: Context-aware messages:
+
+Owner alone: "Waiting for others to join..."
+Non-owner (only owner joined): "No one else has joined yet. Be the first!"
+Multiple participants: List displayed normally
+
+
+
+Button Colors:
+
+Fixed Cancel Ride button to use primary orange (removed error color override)
+Consistent color scheme across all buttons and selected chips
+
+Twilio Setup:
+
+Added verified phone numbers for unlimited testing (bypasses trial rate limits)
+Production users can register normally (trial limit is per-number, sufficient for one-time registration)
+DEV_AUTH_BYPASS can be toggled via .env file for easy testing mode switching
+
+
+Technical Improvements
+Error resilience:
+
+Profile queries use maybeSingle() instead of .single() (handles missing rows)
+Upsert pattern ensures profiles created on first save even if trigger didn't run
+Null guards throughout for graceful handling of edge cases
+
+Date/time handling:
+
+All dates stored as UTC ISO strings in database
+Converted to Israel local time only at display using formatDateTimeLocal()
+DateTimePicker works in device local time, auto-converts to/from UTC
+
+State management:
+
+CreateRideWizard resets on tab navigation (always fresh, current time)
+Filters persist during session, apply button updates feed
+Profile form pre-populates from database, saves all fields atomically
+
+
+M1 Status - 95% Complete! 🎉
+Completed:
+
+✅ Task #1: Participants list with names and owner badges
+✅ Task #2: Owner approval UI (approve/reject buttons)
+✅ Task #3: Quick filter toggles
+✅ Task #4: Profile onboarding fields
+✅ Bonus: Owner cancel functionality
+✅ Bonus: DateTime picker
+✅ Bonus: Tab icons
+✅ Bonus: Empty states
+✅ Bonus: Past ride validation
+
+Remaining (Task #5 - Minor Polish):
+
+⚠️ Error handling improvements (user-friendly error messages)
+⚠️ Dark mode validation (ensure colors work well)
+⚠️ Spacing/alignment consistency pass
+⚠️ Loading state consistency
+
+Estimated time to complete M1: 1-2 hours
+Ready for M2: Chat implementation, transactional push notifications, advanced filters, report/block flows
+
+Known Issues & Deferred Items
+Post-MVP:
+
+Location/distance filtering (requires GPS permission handling)
+Profile-based smart filter defaults (requires profile fields to be populated by users first)
+Home region field (deferred until notification/event features need it)
+Rejected users can immediately re-request (no cooldown - acceptable for MVP)
+No cancellation notifications to participants (M2 feature)
+
+Testing notes:
+
+Multi-user testing validated with 3 test accounts (Eli, Alice, Bob)
+Express and Approval ride modes both tested successfully
+Filter combinations tested (types, skills, time ranges)
+Profile persistence validated across sign-out/sign-in
+Twilio phone OTP tested with verified number
 
 ## How to Run
 ```bash

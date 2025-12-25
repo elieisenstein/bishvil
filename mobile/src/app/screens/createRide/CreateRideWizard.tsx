@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { View } from "react-native";
 import { Button, Divider, Text, useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
+import { useFocusEffect } from "@react-navigation/native";
 
 import { supabase } from "../../../lib/supabase";
 import { createRide } from "../../../lib/rides";
@@ -14,6 +15,19 @@ import StepGroup from "./steps/StepGroup";
 import StepReview from "./steps/StepReview";
 
 type StepKey = "when" | "where" | "details" | "group" | "review";
+
+function getInitialDraft(): CreateRideDraft {
+  return {
+    join_mode: "express",
+    max_participants: 4,
+    pace: null,
+    notes: null,
+    distance_km: null,
+    elevation_m: null,
+    start_name: null,
+    start_at: undefined, // Will be set to "now + 1 hour" by StepWhen
+  };
+}
 
 export default function CreateRideWizard() {
   const { t } = useTranslation();
@@ -31,20 +45,21 @@ export default function CreateRideWizard() {
   );
 
   const [stepIndex, setStepIndex] = useState(0);
-  const [draft, setDraft] = useState<CreateRideDraft>({
-    join_mode: "express",
-    max_participants: 4,
-    pace: null,
-    notes: null,
-    distance_km: null,
-    elevation_m: null,
-    start_name: null,
-  });
+  const [draft, setDraft] = useState<CreateRideDraft>(getInitialDraft());
 
   const [submitting, setSubmitting] = useState(false);
   const canGoNext = draftIsStepValid(stepIndex, draft);
 
   const stepTitle = steps[stepIndex]?.title ?? "";
+
+  // Reset wizard when user navigates back to Create tab
+  useFocusEffect(
+    React.useCallback(() => {
+      // Reset to initial state when tab gains focus
+      setStepIndex(0);
+      setDraft(getInitialDraft());
+    }, [])
+  );
 
   function updateDraft(patch: Partial<CreateRideDraft>) {
     setDraft((prev) => ({ ...prev, ...patch }));
@@ -98,20 +113,10 @@ export default function CreateRideWizard() {
       });
 
       // Reset wizard after publish
-      setDraft({
-        join_mode: "express",
-        max_participants: 4,
-        pace: null,
-        notes: null,
-        distance_km: null,
-        elevation_m: null,
-        start_name: null,
-      });
+      setDraft(getInitialDraft());
       setStepIndex(0);
 
-      // For now: simple confirmation
-      // Later: navigate to ride details or show snackbar
-      //console.log("Ride created:", ride.id);
+      console.log("Ride created:", ride.id);
     } finally {
       setSubmitting(false);
     }

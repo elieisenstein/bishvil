@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
-import { Card, Text, useTheme, Button, Portal, Modal, Checkbox, Divider } from "react-native-paper";
+import { Card, Text, useTheme, Button, Portal, Modal, Checkbox, Divider, Icon } from "react-native-paper";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { listFilteredRides, Ride, type RideFilters } from "../../lib/rides";
@@ -159,8 +159,26 @@ export default function FeedScreen() {
         <View style={{ gap: 12 }}>
           {rides.length === 0 ? (
             <Card>
-              <Card.Content>
-                <Text>No rides match your filters. Try adjusting them or create a new ride!</Text>
+              <Card.Content style={{ alignItems: 'center', padding: 32 }}>
+                <Icon source="bike-fast" size={64} color={theme.colors.outline} />
+                <Text 
+                  variant="titleMedium" 
+                  style={{ marginTop: 16, marginBottom: 8, textAlign: 'center' }}
+                >
+                  No rides found
+                </Text>
+                <Text 
+                  style={{ opacity: 0.7, textAlign: 'center', marginBottom: 16 }}
+                >
+                  Try adjusting your filters or be the first to create a ride!
+                </Text>
+                <Button 
+                  mode="outlined" 
+                  onPress={openFilterModal}
+                  icon="filter-variant"
+                >
+                  Adjust Filters
+                </Button>
               </Card.Content>
             </Card>
           ) : (

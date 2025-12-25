@@ -230,18 +230,22 @@ export default function RideDetailsScreen() {
           {ride.notes ? <Text style={{ opacity: 0.9 }}>{ride.notes}</Text> : null}
 
           {/* ============ PARTICIPANTS LIST ============ */}
-          {joinedParticipants.length > 0 && (
-            <>
-              <Divider style={{ marginVertical: 8 }} />
-              <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
-                Participants
-              </Text>
-              {joinedParticipants.map((p) => (
-                <Text key={p.user_id} style={{ opacity: 0.8, paddingLeft: 8 }}>
-                  • {p.display_name} {p.role === 'owner' ? '(Owner)' : ''}
-                </Text>
-              ))}
-            </>
+          <Divider style={{ marginVertical: 8 }} />
+          <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
+            Participants
+          </Text>
+          {joinedParticipants.map((p) => (
+            <Text key={p.user_id} style={{ opacity: 0.8, paddingLeft: 8 }}>
+              • {p.display_name} {p.role === 'owner' ? '(Owner)' : ''}
+            </Text>
+          ))}
+          {/* Show encouraging message when only owner has joined */}
+          {joinedParticipants.length === 1 && joinedParticipants[0]?.role === 'owner' && (
+            <Text style={{ opacity: 0.6, paddingLeft: 8, fontStyle: 'italic', marginTop: 4 }}>
+              {isOwner 
+                ? "Waiting for others to join..." 
+                : "No one else has joined yet. Be the first!"}
+            </Text>
           )}
 
           {/* ============ PENDING REQUESTS (OWNER ONLY) ============ */}

@@ -3,6 +3,7 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
+import { Icon } from "react-native-paper";
 
 import FeedScreen from "../screens/FeedScreen";
 import ProfileScreen from "../screens/ProfileScreen";
@@ -82,10 +83,43 @@ export default function AppNavigator() {
   const { t } = useTranslation();
 
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
-      <Tab.Screen name="FeedStack" component={FeedStack} options={{ tabBarLabel: t("tabs.feed") }} />
-      <Tab.Screen name="CreateStack" component={CreateStack} options={{ tabBarLabel: t("tabs.create") }} />
-      <Tab.Screen name="ProfileStack" component={ProfileStack} options={{ tabBarLabel: t("tabs.profile") }} />
+    <Tab.Navigator 
+      screenOptions={{ 
+        headerShown: false,
+        tabBarActiveTintColor: "#ff6b35", // Orange for active tab
+        tabBarInactiveTintColor: "#999", // Gray for inactive tabs
+      }}
+    >
+      <Tab.Screen 
+        name="FeedStack" 
+        component={FeedStack} 
+        options={{ 
+          tabBarLabel: t("tabs.feed"),
+          tabBarIcon: ({ color, size }) => (
+            <Icon source="bike" size={size} color={color} />
+          ),
+        }} 
+      />
+      <Tab.Screen 
+        name="CreateStack" 
+        component={CreateStack} 
+        options={{ 
+          tabBarLabel: t("tabs.create"),
+          tabBarIcon: ({ color, size }) => (
+            <Icon source="plus-circle" size={size} color={color} />
+          ),
+        }} 
+      />
+      <Tab.Screen 
+        name="ProfileStack" 
+        component={ProfileStack} 
+        options={{ 
+          tabBarLabel: t("tabs.profile"),
+          tabBarIcon: ({ color, size }) => (
+            <Icon source="account-circle" size={size} color={color} />
+          ),
+        }} 
+      />
     </Tab.Navigator>
   );
 }
