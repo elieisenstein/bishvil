@@ -1,29 +1,88 @@
 import React from "react";
-import { View } from "react-native";
-import { Text } from "react-native-paper";
+import { ScrollView } from "react-native";
+import { Text, Divider, useTheme } from "react-native-paper";
 import { CreateRideDraft } from "../createRideTypes";
 import { formatDateTimeLocal } from "../../../../lib/datetime";
 
 export default function StepReview({ draft }: { draft: CreateRideDraft }) {
-  return (
-    <View style={{ gap: 8 }}>
-      <Text variant="titleMedium">Summary</Text>
+  const theme = useTheme();
 
-      <Text>When: {draft.start_at ? formatDateTimeLocal(draft.start_at) : "—"}</Text>
-      <Text>
-        Where:{" "}
-        {typeof draft.start_lat === "number" && typeof draft.start_lng === "number"
-          ? `${draft.start_lat.toFixed(5)}, ${draft.start_lng.toFixed(5)}`
-          : "—"}
+  return (
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: 12 }}>
+      <Text variant="titleMedium" style={{ color: theme.colors.onBackground }}>
+        Review your ride details
       </Text>
 
-      <Text>Type: {draft.ride_type ?? "—"}</Text>
-      <Text>Skill: {draft.skill_level ?? "—"}</Text>
-      <Text>Distance: {draft.distance_km ?? "—"} km</Text>
-      <Text>Elevation: {draft.elevation_m ?? "—"} m</Text>
+      <Divider />
 
-      <Text>Join mode: {draft.join_mode ?? "—"}</Text>
-      <Text>Max: {draft.max_participants ?? "—"}</Text>
-    </View>
+      {/* When */}
+      <Text style={{ color: theme.colors.onBackground }}>
+        <Text style={{ fontWeight: "bold" }}>When: </Text>
+        {draft.start_at ? formatDateTimeLocal(draft.start_at) : "-"}
+      </Text>
+
+      {/* Where */}
+      <Text style={{ color: theme.colors.onBackground }}>
+        <Text style={{ fontWeight: "bold" }}>Where: </Text>
+        {draft.start_name || "-"}
+      </Text>
+
+      {/* Route Description */}
+      {draft.notes && (
+        <Text style={{ color: theme.colors.onBackground }}>
+          <Text style={{ fontWeight: "bold" }}>Route: </Text>
+          {draft.notes}
+        </Text>
+      )}
+
+      {/* Details */}
+      <Text style={{ color: theme.colors.onBackground }}>
+        <Text style={{ fontWeight: "bold" }}>Type: </Text>
+        {draft.ride_type || "-"}
+      </Text>
+
+      <Text style={{ color: theme.colors.onBackground }}>
+        <Text style={{ fontWeight: "bold" }}>Skill: </Text>
+        {draft.skill_level || "-"}
+      </Text>
+
+      {draft.pace && (
+        <Text style={{ color: theme.colors.onBackground }}>
+          <Text style={{ fontWeight: "bold" }}>Pace: </Text>
+          {draft.pace}
+        </Text>
+      )}
+
+      {draft.distance_km != null && (
+        <Text style={{ color: theme.colors.onBackground }}>
+          <Text style={{ fontWeight: "bold" }}>Distance: </Text>
+          {draft.distance_km} km
+        </Text>
+      )}
+
+      {draft.elevation_m != null && (
+        <Text style={{ color: theme.colors.onBackground }}>
+          <Text style={{ fontWeight: "bold" }}>Elevation: </Text>
+          {draft.elevation_m} m
+        </Text>
+      )}
+
+      {/* Group */}
+      <Text style={{ color: theme.colors.onBackground }}>
+        <Text style={{ fontWeight: "bold" }}>Group mode: </Text>
+        {draft.join_mode === "express" ? "Express (auto-join)" : "Approval required"}
+      </Text>
+
+      <Text style={{ color: theme.colors.onBackground }}>
+        <Text style={{ fontWeight: "bold" }}>Max participants: </Text>
+        {draft.max_participants || "-"}
+      </Text>
+
+      <Divider />
+
+      <Text style={{ opacity: 0.7, fontStyle: "italic" }}>
+        Tap "Publish" to create your ride!
+      </Text>
+    </ScrollView>
   );
 }

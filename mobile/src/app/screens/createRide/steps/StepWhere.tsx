@@ -1,17 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { View, StyleSheet } from "react-native";
-import MapView, { Marker, MapPressEvent, Region } from "react-native-maps";
-import * as Location from "expo-location";
-import { Button, Text } from "react-native-paper";
-
+import React from "react";
+import { View } from "react-native";
+import { Text, TextInput, useTheme } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import { CreateRideDraft } from "../createRideTypes";
-
-const ISRAEL_REGION: Region = {
-  latitude: 32.0853,
-  longitude: 34.7818,
-  latitudeDelta: 0.15,
-  longitudeDelta: 0.15,
-};
 
 export default function StepWhere({
   draft,
@@ -20,102 +11,73 @@ export default function StepWhere({
   draft: CreateRideDraft;
   onChange: (patch: Partial<CreateRideDraft>) => void;
 }) {
-  const [region, setRegion] = useState<Region>(ISRAEL_REGION);
-
-  useEffect(() => {
-    if (
-      typeof draft.start_lat === "number" &&
-      typeof draft.start_lng === "number"
-    ) {
-      setRegion((r) => ({
-        ...r,
-        latitude: draft.start_lat!,
-        longitude: draft.start_lng!,
-      }));
-    }
-  }, [draft.start_lat, draft.start_lng]);
-
-  function onMapPress(e: MapPressEvent) {
-    const { latitude, longitude } = e.nativeEvent.coordinate;
-    onChange({
-      start_lat: latitude,
-      start_lng: longitude,
-      start_name: null,
-    });
-  }
-
-  async function useMyLocation() {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      alert("Location permission denied");
-      return;
-    }
-
-    const loc = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.Balanced,
-    });
-
-    onChange({
-      start_lat: loc.coords.latitude,
-      start_lng: loc.coords.longitude,
-      start_name: null,
-    });
-
-    setRegion((r) => ({
-      ...r,
-      latitude: loc.coords.latitude,
-      longitude: loc.coords.longitude,
-    }));
-  }
-
-  const hasPin =
-    typeof draft.start_lat === "number" &&
-    typeof draft.start_lng === "number";
+  const theme = useTheme();
+  const { t } = useTranslation();
 
   return (
-    <View style={{ flex: 1 }}>
-      <Text style={{ marginBottom: 8 }}>
-        Tap on the map to choose a start point
+    <View style={{ gap: 16 }}>
+      <Text variant="titleMedium" style={{ color: theme.colors.onBackground }}>
+        {t("createRide.where.title")}
       </Text>
 
-      <View style={styles.mapContainer}>
-        <MapView
-          style={StyleSheet.absoluteFill}
-          region={region}
-          onPress={onMapPress}
+      {/* Meeting Point */}
+      <TextInput
+        label={t("createRide.where.meetingPointLabel")}
+        placeholder={t("createRide.where.meetingPointPlaceholder")}
+        value={draft.start_name || ""}
+        onChangeText={(text) => onChange({ start_name: text })}
+        mode="outlined"
+        style={{ backgroundColor: theme.colors.surface }}
+      />
+
+      <Text style={{ opacity: 0.7, fontSize: 12, marginTop: -8 }}>
+        {t("createRide.where.meetingPointHelp")}
+      </Text>
+
+      {/* Optional Route Description */}
+      <TextInput
+        label={t("createRide.where.routeLabel")}
+        placeholder={t("createRide.where.routePlaceholder")}
+        value={draft.notes || ""}
+        onChangeText={(text) => onChange({ notes: text })}
+        mode="outlined"
+        multiline
+        numberOfLines={3}
+        style={{ backgroundColor: theme.colors.surface }}
+      />
+
+      <Text style={{ opacity: 0.7, fontSize: 12, marginTop: -8 }}>
+        {t("createRide.where.routeHelp")}
+      </Text>
+
+      {/* Summary Display */}
+      {draft.start_name && (
+        <View 
+          style={{ 
+            padding: 16, 
+            backgroundColor: theme.colors.surfaceVariant,
+            borderRadius: 8,
+            marginTop: 8
+          }}
         >
-          {hasPin && (
-            <Marker
-              coordinate={{
-                latitude: draft.start_lat!,
-                longitude: draft.start_lng!,
-              }}
-            />
+          <Text style={{ opacity: 0.7, fontSize: 12 }}>
+            {t("createRide.where.summaryMeeting")}
+          </Text>
+          <Text variant="titleMedium" style={{ color: theme.colors.onBackground }}>
+            {draft.start_name}
+          </Text>
+          {draft.notes && (
+            <>
+              <Text style={{ opacity: 0.7, fontSize: 12, marginTop: 8 }}>
+                {t("createRide.where.summaryRoute")}
+              </Text>
+              <Text style={{ color: theme.colors.onBackground }}>
+                {draft.notes}
+              </Text>
+            </>
           )}
-        </MapView>
-      </View>
-
-      <View style={{ marginTop: 12, gap: 8 }}>
-        <Button mode="outlined" onPress={useMyLocation}>
-          Use my location
-        </Button>
-
-        <Text style={{ opacity: 0.7 }}>
-          {hasPin
-            ? `Selected: ${draft.start_lat!.toFixed(
-                5
-              )}, ${draft.start_lng!.toFixed(5)}`
-            : "No location selected"}
-        </Text>
-      </View>
+        </View>
+      )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  mapContainer: {
-    flex: 1,
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-});

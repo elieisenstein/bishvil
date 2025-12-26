@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { View } from "react-native";
+import { View, I18nManager } from "react-native";
 import { Button, Divider, Text, useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import { useFocusEffect } from "@react-navigation/native";
@@ -95,9 +95,10 @@ export default function CreateRideWizard() {
         status: "published",
 
         start_at: draft.start_at!,
-        start_lat: draft.start_lat!,
-        start_lng: draft.start_lng!,
-        start_name: draft.start_name ?? null,
+        // Use dummy coordinates (0,0) since we're using text description only
+        start_lat: 0,
+        start_lng: 0,
+        start_name: draft.start_name!,
 
         ride_type: draft.ride_type!,
         skill_level: draft.skill_level!,
@@ -145,15 +146,15 @@ export default function CreateRideWizard() {
 
       <Divider style={{ marginVertical: 12 }} />
 
-      {/* Navigation buttons */}
-      <View style={{ flexDirection: "row", gap: 12 }}>
+      {/* Navigation buttons - FORCE LTR so Back is always left, Next always right */}
+      <View style={{ flexDirection: I18nManager.isRTL ? "row-reverse" : "row", gap: 12 }}>
         <Button
           mode="outlined"
           disabled={stepIndex === 0 || submitting}
           onPress={() => setStepIndex((i) => Math.max(0, i - 1))}
           style={{ flex: 1 }}
         >
-          Back
+          {t("createRide.navigation.back")}
         </Button>
 
         {stepIndex < steps.length - 1 ? (
@@ -163,11 +164,17 @@ export default function CreateRideWizard() {
             onPress={() => setStepIndex((i) => Math.min(steps.length - 1, i + 1))}
             style={{ flex: 1 }}
           >
-            Next
+            {t("createRide.navigation.next")}
           </Button>
         ) : (
-          <Button mode="contained" disabled={submitting} loading={submitting} onPress={onPublish} style={{ flex: 1 }}>
-            Publish
+          <Button 
+            mode="contained" 
+            disabled={submitting} 
+            loading={submitting} 
+            onPress={onPublish} 
+            style={{ flex: 1 }}
+          >
+            {t("createRide.navigation.publish")}
           </Button>
         )}
       </View>

@@ -197,10 +197,14 @@ export default function FeedScreen() {
                   </Text>
 
                   <Text style={{ opacity: 0.8 }}>
-                    Where:{" "}
-                    {r.start_name ??
-                      `${r.start_lat.toFixed(4)}, ${r.start_lng.toFixed(4)}`}
+                    Where: {r.start_name || "Location TBD"}
                   </Text>
+
+                  {r.notes && (
+                    <Text style={{ opacity: 0.8, fontStyle: 'italic' }}>
+                      Route: {r.notes}
+                    </Text>
+                  )}
 
                   <Text style={{ opacity: 0.8 }}>
                     Group: {r.join_mode} · max {r.max_participants}

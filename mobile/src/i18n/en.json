@@ -24,9 +24,26 @@
     "verify": "Verify"
   },
   "settings": {
-  "title": "Settings",
-  "theme": { "title": "Appearance", "system": "System", "light": "Light", "dark": "Dark" },
-  "language": { "title": "Language", "he": "Hebrew", "en": "English" }
-}
-
+    "title": "Settings",
+    "theme": { "title": "Appearance", "system": "System", "light": "Light", "dark": "Dark" },
+    "language": { "title": "Language", "he": "Hebrew", "en": "English" }
+  },
+  "createRide": {
+    "where": {
+      "title": "Where should riders meet?",
+      "meetingPointLabel": "Meeting Point *",
+      "meetingPointPlaceholder": "e.g., Parking lot at Sataf trailhead",
+      "meetingPointHelp": "Where exactly should people meet you? Be specific!",
+      "routeLabel": "Route Description (Optional)",
+      "routePlaceholder": "Brief description of the route...",
+      "routeHelp": "Example: Loop around Har Eitan, mostly flat, green views",
+      "summaryMeeting": "Meeting Point:",
+      "summaryRoute": "Route:"
+    },
+    "navigation": {
+      "back": "Back",
+      "next": "Next",
+      "publish": "Publish"
+    }
+  }
 }

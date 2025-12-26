@@ -1,6 +1,6 @@
 {
   "tabs": {
-    "feed": "ריידים",
+    "feed": "רכיבות",
     "create": "יצירה",
     "profile": "פרופיל"
   },
@@ -24,8 +24,26 @@
     "verify": "אמת"
   },
   "settings": {
-  "title": "הגדרות",
-  "theme": { "title": "תצוגה", "system": "לפי מערכת", "light": "בהיר", "dark": "כהה" },
-  "language": { "title": "שפה", "he": "עברית", "en": "אנגלית" }
-}
+    "title": "הגדרות",
+    "theme": { "title": "תצוגה", "system": "לפי מערכת", "light": "בהיר", "dark": "כהה" },
+    "language": { "title": "שפה", "he": "עברית", "en": "אנגלית" }
+  },
+  "createRide": {
+    "where": {
+      "title": "איפה רוכבים ייפגשו?",
+      "meetingPointLabel": "נקודת מפגש *",
+      "meetingPointPlaceholder": "לדוגמה, חניון בכניסה לסטף",
+      "meetingPointHelp": "איפה בדיוק אנשים צריכים לפגוש אותך? היה ספציפי!",
+      "routeLabel": "תיאור מסלול (אופציונלי)",
+      "routePlaceholder": "תיאור קצר של המסלול...",
+      "routeHelp": "לדוגמה: סובב הר איתן, שטוח למדי, נוף ירוק",
+      "summaryMeeting": "נקודת מפגש:",
+      "summaryRoute": "מסלול:"
+    },
+    "navigation": {
+      "back": "הקודם",
+      "next": "הבא",
+      "publish": "פרסם"
+    }
+  }
 }

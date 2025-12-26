@@ -1,5 +1,6 @@
 // AppNavigator.tsx
 import React from "react";
+import { I18nManager } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
@@ -88,6 +89,10 @@ export default function AppNavigator() {
         headerShown: false,
         tabBarActiveTintColor: "#ff6b35", // Orange for active tab
         tabBarInactiveTintColor: "#999", // Gray for inactive tabs
+        // Force LTR so tabs stay in same order: Feed, Create, Profile (left to right)
+        tabBarStyle: { 
+          flexDirection: I18nManager.isRTL ? "row-reverse" : "row" 
+        }
       }}
     >
       <Tab.Screen 
