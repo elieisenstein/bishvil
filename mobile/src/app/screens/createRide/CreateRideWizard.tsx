@@ -17,6 +17,10 @@ import StepReview from "./steps/StepReview";
 type StepKey = "when" | "where" | "details" | "group" | "review";
 
 function getInitialDraft(): CreateRideDraft {
+  // Set default date to 1 hour from now
+  const defaultDate = new Date();
+  defaultDate.setHours(defaultDate.getHours() + 1, 0, 0, 0);
+  
   return {
     join_mode: "express",
     max_participants: 4,
@@ -25,7 +29,8 @@ function getInitialDraft(): CreateRideDraft {
     distance_km: null,
     elevation_m: null,
     start_name: null,
-    start_at: undefined, // Will be set to "now + 1 hour" by StepWhen
+    start_at: defaultDate.toISOString(), // Set default date immediately
+    duration_hours: 2, // Default: 2 hours
   };
 }
 
@@ -95,6 +100,7 @@ export default function CreateRideWizard() {
         status: "published",
 
         start_at: draft.start_at!,
+        duration_hours: draft.duration_hours!,
         // Use dummy coordinates (0,0) since we're using text description only
         start_lat: 0,
         start_lng: 0,

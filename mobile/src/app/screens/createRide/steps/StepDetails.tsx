@@ -3,7 +3,7 @@ import { View } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
 import { CreateRideDraft, RideType, SkillLevel } from "../createRideTypes";
 
-const rideTypes: RideType[] = ["XC", "Trail", "Enduro", "Gravel"];
+const rideTypes: RideType[] = ["XC", "Trail", "Enduro", "Gravel", "Road"];
 const skillLevels: SkillLevel[] = ["Beginner", "Intermediate", "Advanced"];
 
 export default function StepDetails({
@@ -18,7 +18,13 @@ export default function StepDetails({
       <Text>Ride type</Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
         {rideTypes.map((rt) => (
-          <Button key={rt} mode={draft.ride_type === rt ? "contained" : "outlined"} onPress={() => onChange({ ride_type: rt })}>
+          <Button 
+            key={rt} 
+            mode={draft.ride_type === rt ? "contained" : "outlined"} 
+            onPress={() => onChange({ ride_type: rt })}
+            buttonColor={rt === "Road" && draft.ride_type === rt ? "#2196F3" : undefined}
+            textColor={rt === "Road" && draft.ride_type !== rt ? "#2196F3" : undefined}
+          >
             {rt}
           </Button>
         ))}

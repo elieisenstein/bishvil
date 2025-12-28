@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
-import { Card, Text, useTheme, Button, Portal, Modal, Checkbox, Divider, Icon } from "react-native-paper";
+import { Card, Text, useTheme, Button, Portal, Modal, Divider, Icon } from "react-native-paper";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { listFilteredRides, Ride, type RideFilters } from "../../lib/rides";
@@ -8,7 +8,7 @@ import { formatDateTimeLocal } from "../../lib/datetime";
 import type { FeedStackParamList } from "../navigation/AppNavigator";
 
 // Available options
-const RIDE_TYPES = ["XC", "Trail", "Enduro", "Gravel"];
+const RIDE_TYPES = ["XC", "Trail", "Enduro", "Gravel", "Road"];
 const SKILL_LEVELS = ["Beginner", "Intermediate", "Advanced"];
 const DAY_OPTIONS = [1, 3, 7, 14, 30];
 
@@ -74,14 +74,8 @@ export default function FeedScreen() {
     // Time range
     if (filters.maxDays === 1) {
       parts.push("Today");
-    } else if (filters.maxDays === 3) {
-      parts.push("3 days");
-    } else if (filters.maxDays === 7) {
-      parts.push("7 days");
-    } else if (filters.maxDays === 14) {
-      parts.push("2 weeks");
-    } else if (filters.maxDays === 30) {
-      parts.push("30 days");
+    } else {
+      parts.push(`${filters.maxDays}d`);
     }
 
     return parts.join(" • ");
@@ -193,7 +187,21 @@ export default function FeedScreen() {
                   </Text>
 
                   <Text style={{ opacity: 0.8 }}>
-                    When: {formatDateTimeLocal(r.start_at)}
+                    When: {(() => {
+                      const startDate = new Date(r.start_at);
+                      const endDate = new Date(startDate);
+                      endDate.setHours(endDate.getHours() + r.duration_hours);
+                      
+                      const dateStr = startDate.toLocaleDateString('he-IL', { 
+                        day: '2-digit',
+                        month: '2-digit', 
+                        year: 'numeric'
+                      });
+                      const startTime = startDate.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+                      const endTime = endDate.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+                      
+                      return `${dateStr} ${startTime}-${endTime} (${r.duration_hours}h)`;
+                    })()}
                   </Text>
 
                   <Text style={{ opacity: 0.8 }}>
@@ -234,73 +242,83 @@ export default function FeedScreen() {
             margin: 20,
             padding: 20,
             borderRadius: 8,
-            maxHeight: '80%',
           }}
         >
-          <ScrollView>
-            <Text variant="titleLarge" style={{ marginBottom: 16 }}>
-              Filter Rides
-            </Text>
+          <Text variant="titleLarge" style={{ marginBottom: 16 }}>
+            Filter Rides
+          </Text>
 
-            {/* Ride Types */}
-            <Text variant="titleMedium" style={{ marginTop: 8, marginBottom: 8 }}>
-              Ride Types
-            </Text>
-            <Text style={{ opacity: 0.7, marginBottom: 8, fontSize: 12 }}>
-              Select none for all types
-            </Text>
+          {/* Ride Types */}
+          <Text variant="titleMedium" style={{ marginTop: 8, marginBottom: 8 }}>
+            Ride Types
+          </Text>
+          <Text style={{ opacity: 0.7, marginBottom: 8, fontSize: 12 }}>
+            Select none for all types
+          </Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
             {RIDE_TYPES.map(type => (
-              <Checkbox.Item
+              <Button
                 key={type}
-                label={type}
-                status={draftFilters.rideTypes.includes(type) ? "checked" : "unchecked"}
+                mode={draftFilters.rideTypes.includes(type) ? "contained" : "outlined"}
                 onPress={() => toggleRideType(type)}
-              />
-            ))}
-
-            <Divider style={{ marginVertical: 16 }} />
-
-            {/* Skill Levels */}
-            <Text variant="titleMedium" style={{ marginBottom: 8 }}>
-              Skill Level
-            </Text>
-            <Text style={{ opacity: 0.7, marginBottom: 8, fontSize: 12 }}>
-              Select one or leave blank for all
-            </Text>
-            {SKILL_LEVELS.map(level => (
-              <Checkbox.Item
-                key={level}
-                label={level}
-                status={draftFilters.skillLevels.includes(level) ? "checked" : "unchecked"}
-                onPress={() => toggleSkillLevel(level)}
-              />
-            ))}
-
-            <Divider style={{ marginVertical: 16 }} />
-
-            {/* Time Range */}
-            <Text variant="titleMedium" style={{ marginBottom: 8 }}>
-              Time Range
-            </Text>
-            {DAY_OPTIONS.map(days => (
-              <Checkbox.Item
-                key={days}
-                label={days === 1 ? "Today" : days === 7 ? "Next 7 days" : days === 14 ? "Next 2 weeks" : `Next ${days} days`}
-                status={draftFilters.maxDays === days ? "checked" : "unchecked"}
-                onPress={() => setDraftFilters({ ...draftFilters, maxDays: days })}
-              />
-            ))}
-
-            {/* Action Buttons */}
-            <View style={{ flexDirection: "row", gap: 12, marginTop: 24 }}>
-              <Button 
-                mode="outlined" 
-                onPress={resetFilters}
-                style={{ flex: 1 }}
+                buttonColor={type === "Road" && draftFilters.rideTypes.includes(type) ? "#2196F3" : undefined}
+                textColor={type === "Road" && !draftFilters.rideTypes.includes(type) ? "#2196F3" : undefined}
               >
-                Reset
+                {type}
               </Button>
-              <Button 
+            ))}
+          </View>
+
+          <Divider style={{ marginVertical: 12 }} />
+
+          {/* Skill Levels */}
+          <Text variant="titleMedium" style={{ marginBottom: 8 }}>
+            Skill Level
+          </Text>
+          <Text style={{ opacity: 0.7, marginBottom: 8, fontSize: 12 }}>
+            Select one or leave blank for all
+          </Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+            {SKILL_LEVELS.map(level => (
+              <Button
+                key={level}
+                mode={draftFilters.skillLevels.includes(level) ? "contained" : "outlined"}
+                onPress={() => toggleSkillLevel(level)}
+              >
+                {level}
+              </Button>
+            ))}
+          </View>
+
+          <Divider style={{ marginVertical: 12 }} />
+
+          {/* Time Range */}
+          <Text variant="titleMedium" style={{ marginBottom: 8 }}>
+            Time Range
+          </Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+            {DAY_OPTIONS.map(days => (
+              <Button
+                key={days}
+                mode={draftFilters.maxDays === days ? "contained" : "outlined"}
+                onPress={() => setDraftFilters({ ...draftFilters, maxDays: days })}
+                style={{ minWidth: 80 }}
+              >
+                {days === 1 ? "Today" : `${days}d`}
+              </Button>
+            ))}
+          </View>
+
+          {/* Action Buttons */}
+          <View style={{ flexDirection: "row", gap: 12, marginTop: 8 }}>
+            <Button 
+              mode="outlined" 
+              onPress={resetFilters}
+              style={{ flex: 1 }}
+            >
+              Reset
+            </Button>
+            <Button 
                 mode="contained" 
                 onPress={applyFilters}
                 style={{ flex: 1 }}
@@ -308,7 +326,6 @@ export default function FeedScreen() {
                 Apply
               </Button>
             </View>
-          </ScrollView>
         </Modal>
       </Portal>
     </>

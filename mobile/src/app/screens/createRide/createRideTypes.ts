@@ -1,10 +1,11 @@
-export type RideType = "XC" | "Trail" | "Enduro" | "Gravel";
+export type RideType = "XC" | "Trail" | "Enduro" | "Gravel" | "Road";
 export type SkillLevel = "Beginner" | "Intermediate" | "Advanced";
 export type Pace = "Slow" | "Moderate" | "Fast";
 export type JoinMode = "express" | "approval";
 
 export type CreateRideDraft = {
   start_at?: string; // ISO string
+  duration_hours?: number; // Ride duration in hours (1-12)
   start_name?: string | null; // Meeting point description (required)
 
   ride_type?: RideType;
@@ -23,7 +24,7 @@ export type CreateRideDraft = {
 export function draftIsStepValid(step: number, d: CreateRideDraft): boolean {
   switch (step) {
     case 0: // When
-      return !!d.start_at;
+      return !!d.start_at && !!d.duration_hours;
     case 1: // Where - only need meeting point text
       return !!d.start_name && d.start_name.trim().length > 0;
     case 2: // Details

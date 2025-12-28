@@ -12,7 +12,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useNavigation } from "@react-navigation/native";
 
-const RIDE_TYPES = ["XC", "Trail", "Enduro", "Gravel"];
+const RIDE_TYPES = ["XC", "Trail", "Enduro", "Gravel", "Road"];
 const SKILL_LEVELS = ["Beginner", "Intermediate", "Advanced"];
 const PACE_OPTIONS = ["Slow", "Moderate", "Fast"];
 
@@ -24,6 +24,7 @@ export default function ProfileScreen() {
   
   // Form state
   const [displayName, setDisplayName] = useState<string>("");
+  const [bio, setBio] = useState<string>("");
   const [selectedRideTypes, setSelectedRideTypes] = useState<string[]>([]);
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
   const [selectedPace, setSelectedPace] = useState<string | null>(null);
@@ -44,6 +45,7 @@ export default function ProfileScreen() {
         // No profile row exists yet - initialize with empty values
         setProfile(null);
         setDisplayName("");
+        setBio("");
         setSelectedRideTypes([]);
         setSelectedSkill(null);
         setSelectedPace(null);
@@ -56,6 +58,7 @@ export default function ProfileScreen() {
       
       // Populate form from profile
       setDisplayName(p.display_name ?? "");
+      setBio(p.bio ?? "");
       setSelectedRideTypes(stringToRideTypes(p.ride_type));
       setSelectedSkill(p.skill);
       setSelectedPace(p.pace);
@@ -78,6 +81,7 @@ export default function ProfileScreen() {
     try {
       const updates = {
         display_name: displayName.trim() || null,
+        bio: bio.trim() || null,
         ride_type: selectedRideTypes.length > 0 ? rideTypesToString(selectedRideTypes) : null,
         skill: selectedSkill,
         pace: selectedPace,
@@ -142,6 +146,21 @@ export default function ProfileScreen() {
         style={{ marginBottom: 16 }}
       />
 
+      {/* About Me */}
+      <TextInput
+        label="About Me (Optional)"
+        value={bio}
+        onChangeText={setBio}
+        multiline
+        numberOfLines={3}
+        maxLength={500}
+        placeholder="Tell others about yourself, your riding style, favorite trails..."
+        style={{ marginBottom: 8 }}
+      />
+      <Text style={{ opacity: 0.6, fontSize: 12, marginBottom: 16, textAlign: 'right' }}>
+        {bio.length}/500
+      </Text>
+
       <Divider style={{ marginBottom: 16 }} />
 
       {/* Ride Types - Multi-select */}
@@ -161,13 +180,16 @@ export default function ProfileScreen() {
             showSelectedCheck={false}
             style={{
               backgroundColor: selectedRideTypes.includes(type) 
-                ? theme.colors.primary 
-                : 'transparent'
+                ? (type === "Road" ? "#2196F3" : theme.colors.primary)
+                : 'transparent',
+              borderColor: type === "Road" && !selectedRideTypes.includes(type) 
+                ? "#2196F3" 
+                : undefined
             }}
             textStyle={{
               color: selectedRideTypes.includes(type) 
-                ? theme.colors.onPrimary 
-                : theme.colors.onSurface
+                ? (type === "Road" ? "#FFFFFF" : theme.colors.onPrimary)
+                : (type === "Road" ? "#2196F3" : theme.colors.onSurface)
             }}
           >
             {type}

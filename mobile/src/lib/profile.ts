@@ -3,6 +3,7 @@ import { supabase } from "./supabase";
 export type Profile = {
   id: string;
   display_name: string | null;
+  bio: string | null; // About Me / User description (max 500 chars)
   home_region: string | null;
   ride_type: string | null; // Comma-separated, e.g., "XC,Trail"
   skill: string | null; // "Beginner" | "Intermediate" | "Advanced"
@@ -14,6 +15,7 @@ export type Profile = {
 
 export type ProfileUpdateInput = {
   display_name?: string;
+  bio?: string;
   ride_type?: string;
   skill?: string;
   pace?: string;
@@ -29,7 +31,7 @@ export async function fetchMyProfile(): Promise<Profile | null> {
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, display_name, home_region, ride_type, skill, pace, birth_year, gender, preferred_ride_times")
+    .select("id, display_name, bio, home_region, ride_type, skill, pace, birth_year, gender, preferred_ride_times")
     .eq("id", user.id)
     .maybeSingle(); // Allows 0 rows without error
 

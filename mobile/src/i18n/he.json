@@ -1,19 +1,21 @@
 {
   "tabs": {
     "feed": "רכיבות",
-    "create": "יצירה",
+    "create": "חדש",
     "profile": "פרופיל"
   },
   "screens": {
-    "feed": { "title": "פיד ריידים" },
-    "create": { "title": "יצירת רייד" },
+    "feed": { "title": "הפיד" },
+    "create": { "title": "חדש" },
     "profile": { "title": "פרופיל" }
   },
   "common": {
     "refresh": "רענן",
     "save": "שמור",
     "signOut": "התנתק",
-    "displayName": "שם תצוגה"
+    "displayName": "כינוי",
+    "aboutMe": "נעים להכיר (אופציונלי)",
+    "aboutMePlaceholder": "ספר לאחרים על עצמך, סגנון הרכיבה שלך, שבילים אהובים..."
   },
   "auth": {
     "title": "התחברות",

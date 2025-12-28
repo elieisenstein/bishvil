@@ -204,7 +204,21 @@ export default function RideDetailsScreen() {
           </Text>
 
           <Text style={{ opacity: 0.8 }}>
-            When: {formatDateTimeLocal(ride.start_at)}
+            When: {(() => {
+              const startDate = new Date(ride.start_at);
+              const endDate = new Date(startDate);
+              endDate.setHours(endDate.getHours() + ride.duration_hours);
+              
+              const dateStr = startDate.toLocaleDateString('he-IL', { 
+                day: '2-digit',
+                month: '2-digit', 
+                year: 'numeric'
+              });
+              const startTime = startDate.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+              const endTime = endDate.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+              
+              return `${dateStr} ${startTime}-${endTime} (${ride.duration_hours}h)`;
+            })()}
           </Text>
 
           <Text style={{ opacity: 0.8 }}>

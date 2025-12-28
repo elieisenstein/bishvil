@@ -12,6 +12,7 @@ export type Ride = {
   status: RideStatus;
 
   start_at: string; // timestamptz ISO
+  duration_hours: number; // Ride duration in hours (1-12)
   start_lat: number;
   start_lng: number;
   start_name: string | null;

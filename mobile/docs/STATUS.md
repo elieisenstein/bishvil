@@ -1,55 +1,57 @@
 # Chavrutrail – Project Status
 
-**Last Updated:** December 26, 2024
+**Last Updated:** December 27, 2024
 
 ---
 
 ## Environment
 - **OS:** Windows
 - **Dev Tool:** VS Code
-- **Mobile:** Expo Go (Android device) + Production APK builds via EAS
+- **Mobile:** Local Android builds (30 sec) + Production APK builds via EAS
 - **Backend:** Supabase (PostgreSQL + Auth + RLS)
 - **Auth:** Twilio Phone OTP (verified numbers for testing)
 
 ---
 
-## Current Status: M1 Complete (Ready for Pilot Testing) 🎉
+## Current Status: M1 Complete & Production Ready! 🎉
 
 ### Phase: M1 – Core MVP ✅
 
 **Completion:** 100%
 
-All core functionality implemented and tested. App is ready for initial pilot testing with family/friends.
+All core functionality implemented, tested, and production-ready. App successfully deployed and tested on physical Android device with real Twilio OTP.
 
 ---
 
 ## M1 Completed Features
 
 ### ✅ Authentication & User Management
-- Phone OTP via Twilio (verified numbers for testing)
-- Supabase Auth integration
+- Phone OTP via Twilio (verified numbers for unlimited testing)
+- Supabase Auth integration with AsyncStorage session persistence
 - Profile auto-creation on signup
+- **Session persists across app restarts** (no re-login required)
 - DEV auth bypass for testing (email/password via .env)
-- Multi-user testing setup (Eli, Alice, Bob)
+- Multi-user testing validated (Eli, Alice, Bob)
 
 ### ✅ Core Ride Management
 **Create Ride Wizard:**
-- When: DateTime picker (blocks past dates/times, timezone-aware)
-- Where: Text-based meeting point + optional route description (no map/GPS for MVP)
-- Details: Ride type, skill level, pace, distance, elevation
-- Group: Express (instant join) vs Approval (owner approves), max participants
-- Review: Summary before publishing
+- **When:** Native DateTime picker (blocks past dates/times, Israel timezone-aware, auto-resets to current time)
+- **Where:** Text-based meeting point + optional route description (no map/GPS complexity)
+- **Details:** Ride type, skill level, pace, distance, elevation
+- **Group:** Express (instant join) vs Approval (owner approves), max participants (1-6)
+- **Review:** Complete summary before publishing
 
 **Ride Features:**
 - Published rides appear in Feed
 - Ride Details screen with full info
 - Participants list with owner badges
 - Real-time participant counts
-- Owner cancel functionality
+- Owner cancel functionality (removes ride from feed)
+- Leave ride (participants only)
 
 ### ✅ Join & Approval System
 **Express Mode:**
-- Instant join, no approval needed
+- One-tap instant join
 - Real-time participant updates
 
 **Approval Mode:**
@@ -57,71 +59,89 @@ All core functionality implemented and tested. App is ready for initial pilot te
 - Pending requests section (owner only)
 - Approve/reject buttons with loading states
 - Approved users move to participants list
-- Rejected users removed from pending
+- Rejected users removed (can re-request)
 
 **Leave/Cancel:**
-- Non-owners can leave rides
+- Non-owners can leave rides anytime
 - Owners must cancel entire ride (prevents orphaned rides)
-- Cancelled rides hidden from feed
+- Cancelled rides automatically hidden from feed
 
 ### ✅ Feed & Filtering
 **Feed Display:**
 - Lists upcoming published rides
-- Shows: type, skill, when, where, route description, group size
+- Shows: type, skill, when, where, **route description** (if provided), group size
 - Tap card → Ride Details
-- Empty state with bike icon and "Adjust Filters" button
+- Empty state: bike icon + "Adjust Filters" button
 
 **Smart Filters:**
 - Ride types (XC, Trail, Enduro, Gravel) - multi-select
 - Skill level (Beginner, Intermediate, Advanced) - single-select
 - Time range (Today, 3 days, 7 days, 2 weeks, 30 days) - single-select
-- Filter summary: "Filters: Trail • Intermediate • 7 days [Edit]"
-- Bottom sheet modal for editing
-- Reset to defaults button
+- Filter summary bar: "Filters: Trail • Intermediate • 7 days [Edit]"
+- Bottom sheet modal with checkboxes
+- One-tap reset to defaults
+- Feed auto-updates on Apply
 
 ### ✅ User Profiles
 **Profile Fields:**
 - Display name (required)
-- Ride types (multi-select chips)
-- Skill level (single-select)
+- Ride types (multi-select chips: XC, Trail, Enduro, Gravel)
+- Skill level (single-select: Beginner, Intermediate, Advanced)
 - Pace preference (Slow, Moderate, Fast)
-- Birth year
-- Gender (optional, with "Skip")
+- Birth year (optional)
+- Gender (Male, Female, Skip - optional)
 
 **Profile Features:**
-- Null-safe loading (handles missing profiles)
-- Upsert pattern (creates profile if doesn't exist)
-- Settings button (theme, language)
-- Sign out
+- Robust null-safe loading
+- Upsert pattern (creates profile if missing)
+- Settings access (theme, language)
+- Sign out button
 
 ### ✅ Internationalization (i18n)
-- Hebrew and English support
-- RTL (right-to-left) for Hebrew
-- LTR (left-to-right) for English
-- Translations for all UI elements
+- **Hebrew and English** full support
+- **RTL (right-to-left)** for Hebrew with proper text alignment
+- **LTR (left-to-right)** for English
+- **Device language detection** on first install
 - Language switcher in Settings
-- Navigation elements stay in consistent positions regardless of RTL
+- **Bilingual restart alert** when switching languages
+- **Language preference persists** via AsyncStorage
+- **Navigation tabs maintain consistent positions** (Feed left, Create middle, Profile right)
+- **Manual app restart required** for RTL changes (standard mobile app behavior)
 
 ### ✅ UI Polish
 **Navigation:**
-- Bottom tabs with icons: 🚴 Feed, ➕ Create, 👤 Profile
-- Orange active tab, gray inactive
-- Consistent tab order regardless of RTL
+- Bottom tabs with Material Design icons: 🚴 Feed, ➕ Create, 👤 Profile
+- Orange active tab (#ff6b35), gray inactive (#999)
+- **Tab order consistent regardless of language** (Feed always left)
 
 **Theme System:**
 - Light, Dark, System modes
-- Orange primary color
-- Consistent button styling
+- Orange primary color throughout
+- Consistent button and chip styling
 
 **Empty States:**
-- Feed: Helpful message + icon when no rides
-- Participants: Contextual messages for owners vs non-owners
+- Feed: Centered card with bike icon, message, and "Adjust Filters" button
+- Ride participants: "Waiting for others..." (owner) / "Be the first!" (non-owner)
 
 **Error Prevention:**
-- Block creating rides in past
-- Validate required fields
-- Loading states on buttons
+- Date picker blocks past dates
+- Time validation with user-friendly alerts
+- Required field validation at each wizard step
+- Loading states on all async buttons
 - Disabled states for invalid actions
+
+### ✅ Development Setup
+**Local Android Builds:**
+- Android Studio + SDK configured
+- Gradle memory optimized (4GB heap, 512MB metaspace)
+- **Build time: ~30 seconds** (after first build)
+- Auto-install to connected device via USB
+- No EAS wait time for iteration
+
+**Production Builds:**
+- EAS build configuration for distribution
+- APK sharing via download link or file transfer
+- Signed releases for Play Store readiness
 
 ---
 
@@ -134,100 +154,128 @@ All core functionality implemented and tested. App is ready for initial pilot te
 - `ride_participants` (ride_id, user_id, role, status)
 
 **RLS Policies:**
-- Profiles: Users can read all, update only own
-- Rides: Users can read published rides, create/update/cancel own
-- Participants: Users can view participants of published rides, join/leave rides
+- Profiles: Users read all, update only own
+- Rides: Users read published rides, create/update/cancel own
+- Participants: View participants of published rides, join/leave rides
 
 **Key Design Decisions:**
-- Dummy coordinates (0,0) stored for rides (text description used instead)
-- UTC timestamps in DB, Israel timezone for display
-- Upsert pattern for profile saves (handles missing rows)
+- **Dummy coordinates (0,0)** stored for rides (text description provides location info)
+- **UTC timestamps** in database, **Israel timezone** for display
+- **Upsert pattern** for profile saves (handles edge cases across environments)
 
 ### React Native App Structure
 ```
 mobile/
 ├── src/
 │   ├── app/
-│   │   ├── navigation/   (AuthGate, AppNavigator, tab stacks)
-│   │   └── state/        (AppSettingsContext)
+│   │   ├── navigation/   (AuthGate, AppNavigator)
+│   │   └── state/        (AppSettingsContext - theme only)
 │   ├── screens/
 │   │   ├── FeedScreen.tsx
 │   │   ├── ProfileScreen.tsx
 │   │   ├── RideDetailsScreen.tsx
-│   │   └── createRide/   (wizard steps)
+│   │   ├── SettingsScreen.tsx
+│   │   └── createRide/   (wizard with 5 steps)
 │   ├── lib/
-│   │   ├── supabase.ts   (client config)
+│   │   ├── supabase.ts   (AsyncStorage session persistence)
 │   │   ├── rides.ts      (CRUD + filters)
-│   │   ├── profile.ts    (CRUD)
-│   │   └── datetime.ts   (timezone handling)
+│   │   ├── profile.ts    (CRUD with upsert)
+│   │   └── datetime.ts   (Israel timezone handling)
 │   └── i18n/
-│       ├── index.ts      (i18n + RTL config)
-│       ├── en.json
-│       └── he.json
+│       ├── index.ts      (language + RTL management)
+│       ├── en.json       (English translations)
+│       └── he.json       (Hebrew translations)
 ```
 
 ---
 
-## Testing Status
+## Production Readiness
 
-### ✅ Multi-User Testing Complete
-- 3 test users (Eli, Alice, Bob)
-- Express rides tested: instant join, real-time updates
-- Approval rides tested: request → approve/reject flow
-- Leave/cancel tested: participants can leave, owners cancel
-- Filter combinations tested: types, skills, time ranges
+### ✅ Tested & Working
+- **Multi-user flows:** 3 test users, all ride modes, all scenarios
+- **Real device testing:** Physical Android phone with production APK
+- **Authentication:** Real Twilio phone OTP working
+- **Session persistence:** Stay logged in after app restart
+- **Language switching:** Hebrew ↔ English with proper RTL/LTR
+- **Local builds:** Fast iteration cycle (30 sec builds)
+- **Timezone handling:** Israel local time display, UTC storage
 
-### ✅ Production Build Tested
-- APK built via EAS (Expo Application Services)
-- Installed on physical Android device
-- Real Twilio phone OTP tested with verified number
-- All core flows validated
+### ✅ Critical Bugs Fixed
+- AsyncStorage configured for Supabase session persistence
+- Timezone display corrected (Israel time, not UTC)
+- Past ride creation blocked with validation
+- RTL tab bar direction fixed (`direction: 'ltr'`)
+- Language preference persistence via AsyncStorage
+- Profile upsert handles missing rows gracefully
+- Create wizard auto-resets on tab navigation
 
 ---
 
 ## Known Limitations & Deferred Features
 
-### Post-MVP (To Address Later):
+### Post-MVP:
 **Location Features:**
-- No GPS/map picker (text description only for now)
-- No distance-based filtering ("near me")
-- No location permission handling
-
-**Profile Enhancements:**
-- Home region field (deferred until needed for notifications)
-- Profile-based smart filter defaults
+- No GPS/map picker (intentional - text is simpler and works)
+- No distance-based filtering
+- No location permissions needed
 
 **User Experience:**
-- No cooldown for rejected join requests (can re-request immediately)
-- No push notifications when ride cancelled
-- No error toast messages (console.log only)
-- Settings as separate tab (currently nested in Profile)
+- No cooldown for rejected join requests
+- No push notifications (M2 feature)
+- Settings nested in Profile (works fine for MVP)
 
 **Content:**
-- Most UI still needs Hebrew translations
-- Limited empty states/error messages
+- Some screens need complete Hebrew translations
+- Error messages could be more user-friendly
 
 ---
 
-## TODO: End of M1 Polish (Optional)
+## Development Workflow
 
-### Priority 1: User-Facing Issues
-- [ ] Complete Hebrew translations for all screens
-- [ ] Add toast/snackbar for errors (instead of console.log)
-- [ ] Dark mode color validation
-- [ ] Add "no internet" error handling
+### Local Development & Building
+```bash
+# Start Expo dev server
+cd mobile
+npx expo start -c
 
-### Priority 2: UX Improvements
-- [ ] Better loading indicators (skeleton screens?)
-- [ ] Confirmation dialogs (cancel ride, leave ride)
-- [ ] Ride edit functionality (owner can edit before ride starts)
-- [ ] Ride deletion (owner can delete draft rides)
+# Build APK locally (30 seconds!)
+npx expo run:android --variant release
 
-### Priority 3: Polish
-- [ ] Icon consistency pass
-- [ ] Spacing/padding consistency
-- [ ] Add app icon and splash screen
-- [ ] Add "About" screen with version info
+# Build for distribution (15-20 minutes)
+eas build --platform android --profile preview
+```
+
+### Testing Users (DEV Mode)
+```env
+# In mobile/.env
+EXPO_PUBLIC_DEV_AUTH_BYPASS=true
+EXPO_PUBLIC_DEV_USER=1  # Switch between 1/2/3 (Eli/Alice/Bob)
+```
+
+### Database Access
+- **Dashboard:** https://supabase.com/dashboard
+- **SQL Editor:** Schema changes, RLS policies
+- **Auth Users:** User management, sessions
+- **Table Editor:** Manual data inspection
+
+---
+
+## Distribution & Deployment
+
+### Sharing APK with Testers
+1. **Build APK** (local or EAS)
+2. **Share via:**
+   - WhatsApp (send APK file directly)
+   - Google Drive (upload and share link)
+   - Email (may be blocked by some providers)
+   - Direct Expo build link
+
+### Installing APK
+1. Download APK on Android device
+2. Enable "Install unknown apps" from source
+3. Tap APK file → Install
+4. Open app → Complete phone OTP
+5. Ready to use!
 
 ---
 
@@ -235,199 +283,132 @@ mobile/
 
 ### M2 Goals (Next Phase)
 **Timeline:** 2-3 weeks  
-**Focus:** Make the app safe and engaging for real-world use
+**Focus:** Make app safe and engaging for public use
 
-### M2.1: In-App Chat (Critical for Safety)
-**Why:** Participants need to communicate about ride logistics, changes, emergencies
+### M2.1: In-App Chat ⭐ (Critical)
+- Per-ride chat rooms
+- Real-time messaging (Supabase Realtime)
+- Owner announcements
+- Chat archive after ride ends
 
-**Features:**
-- [ ] Per-ride chat room (all joined participants + owner)
-- [ ] Real-time messaging via Supabase Realtime
-- [ ] Message notifications (when app is open)
-- [ ] Chat shows: participant name, timestamp
-- [ ] Owner can send announcements (highlighted messages)
-- [ ] Chat disabled after ride ends (read-only archive)
-
-**Technical:**
-- New table: `ride_messages` (ride_id, user_id, message, created_at)
-- RLS: Only joined participants can read/write
-- Supabase Realtime subscription per ride
-- Simple text messages only (no media/emojis for MVP)
-
-### M2.2: Push Notifications (Transactional)
-**Why:** Users need to know about ride updates when app is closed
-
-**Critical Notifications:**
-- [ ] Join request received (owner, approval mode)
-- [ ] Join request approved/rejected (participant)
-- [ ] Ride cancelled by owner (all participants)
-- [ ] New chat message in your rides (all participants)
-- [ ] Ride starts in 1 hour (reminder to all participants)
-
-**Technical:**
-- Expo Push Notifications
-- New table: `notification_preferences` (user_id, enabled, channels)
-- Background jobs via Supabase Edge Functions or cron
-- Send only transactional notifications (not marketing)
+### M2.2: Push Notifications ⭐
+- Join request notifications
+- Ride cancelled alerts
+- Chat message notifications
+- "Ride starts in 1 hour" reminders
 
 ### M2.3: Advanced Filters
-**Why:** Users need to find rides that match their preferences
-
-**Features:**
-- [ ] Location/distance filter ("within 25km of me")
-- [ ] Use profile preferences as smart defaults
-- [ ] Save filter presets
-- [ ] "My rides" filter (rides I've joined or created)
-
-**Technical:**
-- Request location permission
-- PostGIS extension in Supabase for geo queries
-- Store last known location in AsyncStorage
-- Fallback to home region if location denied
+- Location/distance filtering
+- Profile-based smart defaults
+- Saved filter presets
+- "My rides" filter
 
 ### M2.4: Report & Block
-**Why:** Safety and community trust are essential
-
-**Features:**
-- [ ] Report ride (spam, inappropriate, dangerous)
-- [ ] Report user (harassment, no-show, unsafe behavior)
-- [ ] Block user (prevents seeing their rides, joining same rides)
-- [ ] Admin review dashboard (Supabase Dashboard or custom)
-
-**Technical:**
-- New tables: `reports` (reporter_id, reported_id, reason, status)
-- New table: `blocks` (blocker_id, blocked_id)
-- RLS: Users can't see rides created by blocked users
-- Email notification to admin on report
+- Report rides/users
+- Block functionality
+- Admin review dashboard
 
 ### M2.5: Ride Lifecycle
-**Why:** Complete the ride experience
-
-**Features:**
-- [ ] Ride status: draft → published → in-progress → completed
-- [ ] Mark ride as "in progress" (manual or auto at start time)
-- [ ] Mark ride as "completed" (owner or auto after end time)
-- [ ] Rate ride experience (star rating, optional comment)
-- [ ] Ride history (past rides you've joined)
-
-**Technical:**
-- Update ride status enum
-- Add `end_at` timestamp (calculated from start + estimated duration)
-- New table: `ride_ratings` (ride_id, user_id, rating, comment)
-- Past rides feed (filter by status=completed)
+- Ride status: draft → published → in-progress → completed
+- Ride ratings
+- Ride history
 
 ---
 
-## M3+ Future Enhancements (Post-Pilot)
+## M3+ Future Vision
 
-### Social Features
-- User profiles with stats (rides completed, rating, bio)
+### Social
+- User profiles with stats
 - Follow/friend system
-- Activity feed (friend joined a ride, completed a ride)
-- Ride photos/gallery
-- Route sharing (GPX export/import)
+- Activity feed
+- Ride photos
 
 ### Discovery
-- Recommended rides based on profile/history
-- Recurring rides (weekly Saturday morning ride)
-- Ride series/challenges (complete 10 rides this month)
-- Popular routes (most-ridden trails)
+- Ride recommendations
+- Recurring rides
+- Popular routes
 
-### Safety & Trust
-- Verified riders (phone verified, ID verified)
-- Ride insurance integration
-- Emergency contacts
-- Live location sharing during ride
+### Safety
+- Verified riders
+- Live location sharing
 - SOS button
 
-### Advanced Features
-- Integration with Strava/Komoot
-- Bike gear recommendations
+### Integrations
+- Strava/Komoot sync
 - Weather alerts
-- Trail conditions reports
-- Ride skills/coaching system
+- Trail conditions
 
 ---
 
-## Development Workflow
+## Key Files Reference
 
-### Local Development
-```bash
-cd mobile
-npx expo start -c        # Clear cache and start
-```
+**Critical Config:**
+- `mobile/.env` - Supabase credentials, dev bypass settings
+- `mobile/app.json` - Expo configuration
+- `mobile/android/gradle.properties` - Build memory settings
 
-**Testing Users (via .env):**
-```env
-EXPO_PUBLIC_DEV_AUTH_BYPASS=true  # Enable dev bypass
-EXPO_PUBLIC_DEV_USER=1            # Switch between 1/2/3
-```
+**Core Functionality:**
+- `src/lib/supabase.ts` - Client with AsyncStorage persistence
+- `src/lib/rides.ts` - Ride CRUD + filtering logic
+- `src/i18n/index.ts` - Language + RTL management
+- `App.tsx` - i18n initialization with device locale detection
 
-### Building APK
-```bash
-cd mobile
-eas build --platform android --profile preview
-```
-
-**Build time:** 10-20 minutes  
-**Download:** From Expo dashboard or terminal link  
-**Install:** Transfer APK to phone, enable "Install unknown apps", install
-
-### Database Management
-- **Dashboard:** https://supabase.com
-- **SQL Editor:** For schema changes, RLS policies
-- **Table Editor:** For manual data inspection
-- **Auth:** For user management
+**Key Screens:**
+- `src/screens/FeedScreen.tsx` - Feed with filters
+- `src/screens/createRide/CreateRideWizard.tsx` - 5-step wizard
+- `src/screens/RideDetailsScreen.tsx` - Join/approve/cancel
+- `src/screens/SettingsScreen.tsx` - Language/theme switching
 
 ---
 
-## Critical Files Reference
-
-**Config:**
-- `mobile/.env` - Environment variables (Supabase, dev bypass)
-- `mobile/app.json` - Expo config
-- `mobile/eas.json` - EAS build config
-
-**Auth:**
-- `src/app/navigation/AuthGate.tsx` - Auth check + dev bypass
-
-**Rides:**
-- `src/lib/rides.ts` - All ride CRUD + filters
-- `src/screens/FeedScreen.tsx` - Main feed with filters
-- `src/screens/RideDetailsScreen.tsx` - Ride details + join/approve
-- `src/screens/createRide/CreateRideWizard.tsx` - Multi-step wizard
-
-**Profiles:**
-- `src/lib/profile.ts` - Profile CRUD
-- `src/screens/ProfileScreen.tsx` - Profile form with chips
-
-**i18n:**
-- `src/i18n/index.ts` - i18n + RTL config
-- `src/i18n/en.json` - English translations
-- `src/i18n/he.json` - Hebrew translations
-
----
-
-## Success Metrics (Pilot Phase Goals)
+## Success Metrics (Pilot Goals)
 
 **Week 1-2:**
-- [ ] 5-10 active testers (family/friends)
+- [ ] 5-10 testers actively using app
 - [ ] 10+ rides created
-- [ ] 20+ ride joins
-- [ ] Zero critical bugs reported
+- [ ] 20+ successful joins
+- [ ] Zero critical bugs
 - [ ] Average 2+ participants per ride
 
 **Week 3-4:**
-- [ ] User feedback collected via survey
-- [ ] Iterate on pain points
+- [ ] User feedback survey
+- [ ] Iterate on top pain points
 - [ ] Add 2-3 most-requested features
-- [ ] Prepare for wider beta (M2 features)
+- [ ] Prepare M2 rollout
 
 **Success Indicators:**
-- Users create rides without help
-- Users successfully find and join rides
-- Repeat usage (same user creates/joins multiple rides)
+- Users create rides independently
+- Users find and join rides successfully
+- Repeat usage (multiple rides per user)
 - Positive feedback on core UX
+- No major complaints about language switching
+
+---
+
+## Build Commands Quick Reference
+
+```bash
+# Local development
+npx expo start -c
+
+# Local build (fast - 30 seconds)
+npx expo run:android --variant release
+
+# Production build (slow - 15 mins, for distribution)
+eas build --platform android --profile preview
+
+# Check connected device
+adb devices
+
+# Uninstall app
+adb uninstall com.elieisenstein.chavrutrail
+
+# Install APK manually
+adb install path/to/app.apk
+
+# View logs
+adb logcat | grep -i chavrutrail
+```
 
 ---
 
@@ -435,21 +416,195 @@ eas build --platform android --profile preview
 
 **Developer:** Eli Eisenstein  
 **Project:** Chavrutrail MVP  
-**Repository:** (Add GitHub link when ready)  
-**Supabase Project:** chavrutrail  
-**Twilio Account:** Trial (verified numbers only)
+**Supabase:** chavrutrail project  
+**Twilio:** Trial account (verified numbers for testing)
 
 ---
 
-**Status:** Ready for pilot testing! 🚀  
-**Next Step:** Deploy APK to 5-10 testers and gather feedback.
+## Session Notes (Dec 27, 2024)
 
-Build:
-cd mobile
-npx expo run:android --variant release
+**Major Accomplishments:**
+- ✅ Removed map/GPS complexity (text-based locations work great)
+- ✅ Fixed timezone display (Israel local time working)
+- ✅ Set up local Android builds (30-second iteration)
+- ✅ Fixed session persistence (AsyncStorage for Supabase)
+- ✅ Implemented language switching with RTL support
+- ✅ Solved RTL tab bar issue (`direction: 'ltr'` - critical fix!)
+- ✅ Device language detection on first install
+- ✅ Bilingual restart alerts
+- ✅ Complete M1 feature set validated
 
-Minor Issue (Cosmetic) ⚠️
+**Technical Wins:**
+- Increased Gradle memory to handle expo-updates
+- Proper i18n initialization with async/await
+- Language persistence via AsyncStorage (separate from AppSettingsContext)
+- Tab bar direction fix after extensive debugging
 
-Icons reverse in Hebrew (Profile left instead of right)
-Everything else works fine
-This is a known React Navigation + RTL limitation
+**Known Minor Issue:**
+- None! Everything working as expected.
+
+---
+
+**Status:** 🚀 **PRODUCTION READY FOR PILOT TESTING!**  
+**Next Steps:** 
+1. Share APK with 5-10 testers
+2. Gather feedback
+3. Plan M2 based on user needs
+4. Consider web build for desktop access/demos
+
+Recommendation: Add M2.1 + M2.2 Before Pilot
+Phase 1.5: Make It Actually Useful (1-2 weeks)
+Must-Have Features:
+1. In-App Chat ⭐⭐⭐ (Critical)
+Effort: ~3-4 days
+Why: Without this, the app is just a worse version of "WhatsApp group + shared calendar"
+Minimum implementation:
+
+Per-ride chat (only joined participants)
+Simple text messages
+Real-time via Supabase Realtime
+No need for: read receipts, typing indicators, media, emojis, reactions
+Just basic "send message, see messages" functionality
+
+2. Push Notifications ⭐⭐⭐ (Critical)
+Effort: ~2-3 days
+Why: App is unusable without knowing when things happen
+Minimum notifications:
+
+For ride owner:
+
+"Alice joined your ride" (express mode)
+"Bob requested to join your ride" (approval mode)
+"New message in your ride"
+
+
+For participants:
+
+"Your join request was approved/rejected"
+"Ride cancelled by owner"
+"New message in ride you joined"
+
+Last Plan M2:
+
+M2 Implementation Plan
+M2.1: Core Polish Features
+Task 2.1.1: Add Ride Duration/End Time
+
+Add duration field to ride creation form
+Calculate and display end time based on start time + duration
+Update ride card to show duration
+Update ride details to show both duration and end time
+Database: Add duration_minutes field to rides table
+
+Task 2.1.2: Add Road Biking Discipline
+
+Add "Road" to discipline enum in database
+Update discipline picker in ride creation
+Update discipline filter in ride search
+Update user profile discipline preferences
+Add Road biking icon/styling
+
+Task 2.1.3: Enable Multi-Day Rides
+
+Replace single date picker with date range picker
+Add start_date and end_date fields to rides table (replace single date)
+Update ride card to show date range for multi-day rides
+Update filtering logic to handle date ranges
+Validation: end_date must be >= start_date
+
+Task 2.1.4: Add Profile Description
+
+Add bio or description field to profiles table (text, 500 chars max)
+Add text input to profile creation/edit
+Display description on profile view
+Add character counter to input
+
+Task 2.1.5: Default 10km Radius Filter
+
+Get user's current location on ride search screen
+Add user_latitude and user_longitude to profiles table
+Calculate distance between user location and ride location
+Apply 10km default filter (with option to expand/disable)
+Show distance in ride cards
+
+Task 2.1.6: Auto-Filter by User Profile Preferences
+
+When user opens ride search, pre-filter by their discipline preferences
+Add toggle to "Show all disciplines"
+Store user discipline preferences in profile
+Apply filter by default but allow override
+
+M2.2: In-App Chat
+Task 2.2.1: Chat Database Schema
+
+Create conversations table (id, participant1_id, participant2_id, created_at, last_message_at)
+Create messages table (id, conversation_id, sender_id, content, created_at, read_at)
+Add RLS policies for both tables
+Add indexes for performance
+
+Task 2.2.2: Conversation List Screen
+
+Create inbox/conversations list screen
+Show conversation partners with avatar and name
+Show last message preview and timestamp
+Show unread count badge
+Real-time subscription to new messages
+Pull to refresh
+
+Task 2.2.3: Chat Screen
+
+Create chat screen with message bubbles
+Send message functionality
+Real-time message updates (Supabase realtime)
+Message timestamps
+Sender/receiver bubble styling
+Keyboard handling and auto-scroll
+"Mark as read" functionality
+
+Task 2.2.4: Chat Entry Points
+
+Add "Message" button on ride details (when viewing someone else's ride)
+Add "Message" button on user profiles
+Create or navigate to existing conversation
+Add chat icon in main navigation
+
+M2.3: Push Notifications
+Task 2.3.1: Expo Notifications Setup
+
+Install expo-notifications
+Configure push notification credentials (APNs & FCM)
+Request notification permissions on app start
+Store push tokens in profiles table
+Handle notification token refresh
+
+Task 2.3.2: Supabase Edge Functions for Notifications
+
+Create Edge Function for sending push notifications
+Trigger on new message (database trigger)
+Trigger on ride join request
+Trigger on ride request accepted/declined
+Send notification via Expo Push API
+
+Task 2.3.3: Notification Handling
+
+Handle notification received (foreground)
+Handle notification tapped (background/killed)
+Navigate to appropriate screen (chat, ride details)
+Update badge count
+Show in-app notification banners
+
+Task 2.3.4: Notification Preferences
+
+Add notification settings screen
+Toggle for message notifications
+Toggle for ride notifications
+Toggle for system notifications
+Save preferences to profile
+
+
+Suggested Order of Implementation
+
+M2.1 first (Polish features) - Makes app feel complete, ~1 week
+M2.2 then (Chat) - Core functionality, ~1 week
+M2.3 last (Notifications) - Enhances chat experience, ~3-5 days
+

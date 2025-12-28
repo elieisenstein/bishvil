@@ -153,6 +153,39 @@ export default function StepWhen({
           })}
         </Text>
       </View>
+
+      {/* Duration Picker */}
+      <View style={{ gap: 8, marginTop: 8 }}>
+        <Text variant="titleMedium" style={{ color: theme.colors.onBackground }}>
+          How long will the ride be?
+        </Text>
+        
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((hours) => (
+            <Button
+              key={hours}
+              mode={draft.duration_hours === hours ? "contained" : "outlined"}
+              onPress={() => onChange({ duration_hours: hours })}
+              style={{ minWidth: 70 }}
+            >
+              {hours}h
+            </Button>
+          ))}
+        </View>
+
+        {/* Show end time if duration is selected */}
+        {draft.duration_hours && (
+          <Text style={{ color: theme.colors.onBackground, opacity: 0.7, marginTop: 4 }}>
+            Ride ends at:{" "}
+            {(() => {
+              const endDate = new Date(selectedDate);
+              endDate.setHours(endDate.getHours() + draft.duration_hours);
+              return endDate.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+            })()}
+            {" "}({draft.duration_hours}h)
+          </Text>
+        )}
+      </View>
     </View>
   );
 }

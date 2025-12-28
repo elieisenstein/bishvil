@@ -1,49 +1,66 @@
 {
-  "tabs": {
-    "feed": "Feed",
-    "create": "Create",
-    "profile": "Profile"
-  },
-  "screens": {
-    "feed": { "title": "Ride Feed" },
-    "create": { "title": "Create Ride" },
-    "profile": { "title": "Profile" }
-  },
-  "common": {
-    "refresh": "Refresh",
-    "save": "Save",
-    "signOut": "Sign out",
-    "displayName": "Display name"
-  },
-  "auth": {
-    "title": "Sign in",
-    "phoneLabel": "Phone number",
-    "sendCode": "Send code",
-    "verifyTitle": "Verify code",
-    "codeLabel": "Code",
-    "verify": "Verify"
-  },
-  "settings": {
-    "title": "Settings",
-    "theme": { "title": "Appearance", "system": "System", "light": "Light", "dark": "Dark" },
-    "language": { "title": "Language", "he": "Hebrew", "en": "English" }
-  },
-  "createRide": {
-    "where": {
-      "title": "Where should riders meet?",
-      "meetingPointLabel": "Meeting Point *",
-      "meetingPointPlaceholder": "e.g., Parking lot at Sataf trailhead",
-      "meetingPointHelp": "Where exactly should people meet you? Be specific!",
-      "routeLabel": "Route Description (Optional)",
-      "routePlaceholder": "Brief description of the route...",
-      "routeHelp": "Example: Loop around Har Eitan, mostly flat, green views",
-      "summaryMeeting": "Meeting Point:",
-      "summaryRoute": "Route:"
+    "tabs": {
+        "feed": "Feed",
+        "create": "New",
+        "profile": "Profile"
     },
-    "navigation": {
-      "back": "Back",
-      "next": "Next",
-      "publish": "Publish"
+    "screens": {
+        "feed": {
+            "title": "Ride Feed"
+        },
+        "create": {
+            "title": "New"
+        },
+        "profile": {
+            "title": "Profile"
+        }
+    },
+    "common": {
+        "refresh": "Refresh",
+        "save": "Save",
+        "signOut": "Sign out",
+        "displayName": "Display name",
+        "aboutMe": "About Me (Optional)",
+        "aboutMePlaceholder": "Tell others about yourself, your riding style, favorite trails..."
+    },
+    "auth": {
+        "title": "Sign in",
+        "phoneLabel": "Phone number",
+        "sendCode": "Send code",
+        "verifyTitle": "Verify code",
+        "codeLabel": "Code",
+        "verify": "Verify"
+    },
+    "settings": {
+        "title": "Settings",
+        "theme": {
+            "title": "Appearance",
+            "system": "System",
+            "light": "Light",
+            "dark": "Dark"
+        },
+        "language": {
+            "title": "Language",
+            "he": "Hebrew",
+            "en": "English"
+        }
+    },
+    "createRide": {
+        "where": {
+            "title": "Where should riders meet?",
+            "meetingPointLabel": "Meeting Point *",
+            "meetingPointPlaceholder": "e.g., Parking lot at Sataf trailhead",
+            "meetingPointHelp": "Where exactly should people meet you? Be specific!",
+            "routeLabel": "Route Description (Optional)",
+            "routePlaceholder": "Brief description of the route...",
+            "routeHelp": "Example: Loop around Har Eitan, mostly flat, green views",
+            "summaryMeeting": "Meeting Point:",
+            "summaryRoute": "Route:"
+        },
+        "navigation": {
+            "back": "Back",
+            "next": "Next",
+            "publish": "Publish"
+        }
     }
-  }
 }
