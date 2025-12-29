@@ -10,15 +10,22 @@ import ProfileScreen from "../screens/ProfileScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import CreateRideWizard from "../screens/createRide/CreateRideWizard";
 import RideDetailsScreen from "../screens/RideDetailsScreen";
+import MyRidesScreen from "../screens/MyRidesScreen";
 
 export type AppTabsParamList = {
   FeedStack: undefined;
+  MyRidesStack: undefined; // Changed from MyRidesTab
   CreateStack: undefined;
   ProfileStack: undefined;
 };
 
 export type FeedStackParamList = {
   FeedList: undefined;
+  RideDetails: { rideId: string };
+};
+
+export type MyRidesStackParamList = {
+  MyRidesList: undefined;
   RideDetails: { rideId: string };
 };
 
@@ -33,6 +40,7 @@ export type CreateRideStackParamList = {
 
 const Tab = createBottomTabNavigator<AppTabsParamList>();
 const FeedStackNav = createNativeStackNavigator<FeedStackParamList>();
+const MyRidesStackNav = createNativeStackNavigator<MyRidesStackParamList>();
 const ProfileStackNav = createNativeStackNavigator<ProfileStackParamList>();
 const CreateStackNav = createNativeStackNavigator<CreateRideStackParamList>();
 
@@ -51,6 +59,24 @@ function FeedStack() {
         options={{ title: "Ride" }}
       />
     </FeedStackNav.Navigator>
+  );
+}
+
+function MyRidesStack() {
+  const { t } = useTranslation();
+  return (
+    <MyRidesStackNav.Navigator>
+      <MyRidesStackNav.Screen
+        name="MyRidesList"
+        component={MyRidesScreen}
+        options={{ title: t("tabs.myRides") }}
+      />
+      <MyRidesStackNav.Screen
+        name="RideDetails"
+        component={RideDetailsScreen}
+        options={{ title: "Ride" }}
+      />
+    </MyRidesStackNav.Navigator>
   );
 }
 
@@ -86,12 +112,13 @@ export default function AppNavigator() {
         headerShown: false,
         tabBarActiveTintColor: "#ff6b35",
         tabBarInactiveTintColor: "#999",
-        // Force LTR so tabs always stay: Feed (left) → Create (middle) → Profile (right)
+        // Force LTR so tabs always stay: Feed → My Rides → Create → Profile
         tabBarStyle: { 
           direction: 'ltr' 
         }
       }}
     >
+      {/* Feed Tab */}
       <Tab.Screen 
         name="FeedStack" 
         component={FeedStack} 
@@ -102,6 +129,20 @@ export default function AppNavigator() {
           ),
         }} 
       />
+
+      {/* My Rides Tab */}
+      <Tab.Screen
+        name="MyRidesStack"
+        component={MyRidesStack}
+        options={{
+          tabBarLabel: t("tabs.myRides"),
+          tabBarIcon: ({ color, size }) => (
+            <Icon source="calendar-account" size={size} color={color} />
+          ),
+        }}
+      />
+
+      {/* Create Tab */}
       <Tab.Screen 
         name="CreateStack" 
         component={CreateStack} 
@@ -112,6 +153,8 @@ export default function AppNavigator() {
           ),
         }} 
       />
+
+      {/* Profile Tab */}
       <Tab.Screen 
         name="ProfileStack" 
         component={ProfileStack} 

@@ -2,7 +2,8 @@ import React, { useMemo, useState, useEffect } from "react";
 import { View, I18nManager } from "react-native";
 import { Button, Divider, Text, useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { supabase } from "../../../lib/supabase";
 import { createRide } from "../../../lib/rides";
@@ -37,6 +38,7 @@ function getInitialDraft(): CreateRideDraft {
 export default function CreateRideWizard() {
   const { t } = useTranslation();
   const theme = useTheme();
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   const steps: { key: StepKey; title: string }[] = useMemo(
     () => [
@@ -101,8 +103,9 @@ export default function CreateRideWizard() {
 
         start_at: draft.start_at!,
         duration_hours: draft.duration_hours!,
-        start_lat: draft.start_lat!,  // ← USE ACTUAL COORDINATES
-        start_lng: draft.start_lng!,  // ← USE ACTUAL COORDINATES
+        // ✅ FIXED: Use actual coordinates from draft, not dummy (0,0)
+        start_lat: draft.start_lat!,
+        start_lng: draft.start_lng!,
         start_name: draft.start_name!,
 
         ride_type: draft.ride_type!,
@@ -123,6 +126,13 @@ export default function CreateRideWizard() {
       setStepIndex(0);
 
       console.log("Ride created:", ride.id);
+
+      // 🎯 Navigate to the newly created ride's detail page
+      navigation.navigate("MyRidesStack", {
+        screen: "RideDetails",
+        params: { rideId: ride.id }
+      });
+
     } finally {
       setSubmitting(false);
     }

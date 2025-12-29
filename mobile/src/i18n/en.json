@@ -1,6 +1,7 @@
 {
     "tabs": {
         "feed": "Feed",
+        "myRides": "My Rides",
         "create": "New",
         "profile": "Profile"
     },
@@ -63,5 +64,10 @@
             "next": "Next",
             "publish": "Publish"
         }
+    },
+    "myRides": {
+        "organizing": "Organizing",
+        "joined": "Joined",
+        "requested": "Requested"
     }
 }

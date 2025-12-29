@@ -1,6 +1,7 @@
 {
   "tabs": {
     "feed": "רכיבות",
+    "myRides": "הרכיבות שלי",
     "create": "חדש",
     "profile": "פרופיל"
   },
@@ -48,5 +49,10 @@
       "next": "הבא",
       "publish": "פרסם"
     }
+  },
+  "myRides": {
+    "organizing": "מארגן",
+    "joined": "משתתף",
+    "requested": "ממתין"
   }
 }

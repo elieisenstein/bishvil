@@ -307,3 +307,79 @@ export async function cancelRide(rideId: string): Promise<void> {
 
   if (error) throw new Error(error.message);
 }
+
+/**
+ * Get rides I'm organizing (owner)
+ */
+export async function getMyOrganizingRides(): Promise<Ride[]> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const userId = sessionData.session?.user.id;
+  if (!userId) throw new Error("Not signed in");
+
+  const { data, error } = await supabase
+    .from("rides")
+    .select("*")
+    .eq("owner_id", userId)
+    .eq("status", "published")
+    .gte("start_at", new Date().toISOString()) // Only upcoming rides
+    .order("start_at", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return (data as Ride[]) || [];
+}
+
+/**
+ * Get rides I've joined (as participant, NOT owner)
+ */
+export async function getMyJoinedRides(): Promise<Ride[]> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const userId = sessionData.session?.user.id;
+  if (!userId) throw new Error("Not signed in");
+
+  const { data, error } = await supabase
+    .from("rides")
+    .select(`
+      *,
+      ride_participants!inner(user_id, status)
+    `)
+    .eq("ride_participants.user_id", userId)
+    .eq("ride_participants.status", "joined")
+    .neq("owner_id", userId) // ← EXCLUDE rides where I'm the owner
+    .eq("status", "published")
+    .gte("start_at", new Date().toISOString())
+    .order("start_at", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return (data as any[]).map(item => {
+    const { ride_participants, ...ride } = item;
+    return ride as Ride;
+  });
+}
+
+/**
+ * Get rides I've requested to join (waiting approval, NOT owner)
+ */
+export async function getMyRequestedRides(): Promise<Ride[]> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const userId = sessionData.session?.user.id;
+  if (!userId) throw new Error("Not signed in");
+
+  const { data, error } = await supabase
+    .from("rides")
+    .select(`
+      *,
+      ride_participants!inner(user_id, status)
+    `)
+    .eq("ride_participants.user_id", userId)
+    .eq("ride_participants.status", "requested")
+    .neq("owner_id", userId) // ← EXCLUDE rides where I'm the owner
+    .eq("status", "published")
+    .gte("start_at", new Date().toISOString())
+    .order("start_at", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return (data as any[]).map(item => {
+    const { ride_participants, ...ride } = item;
+    return ride as Ride;
+  });
+}
