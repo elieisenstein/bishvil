@@ -1,11 +1,12 @@
 import React from "react";
 import { View } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import { CreateRideDraft, JoinMode } from "../createRideTypes";
 
-const joinModes: { mode: JoinMode; label: string }[] = [
-  { mode: "express", label: "Express (auto-join)" },
-  { mode: "approval", label: "Approval (owner accepts)" },
+const joinModes: { mode: JoinMode }[] = [
+  { mode: "express" },
+  { mode: "approval" },
 ];
 
 export default function StepGroup({
@@ -15,9 +16,11 @@ export default function StepGroup({
   draft: CreateRideDraft;
   onChange: (patch: Partial<CreateRideDraft>) => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <View style={{ gap: 12 }}>
-      <Text>Join mode</Text>
+      <Text>{t("createRide.group.joinMode")}</Text>
       <View style={{ gap: 8 }}>
         {joinModes.map((jm) => (
           <Button
@@ -25,20 +28,20 @@ export default function StepGroup({
             mode={draft.join_mode === jm.mode ? "contained" : "outlined"}
             onPress={() => onChange({ join_mode: jm.mode })}
           >
-            {jm.label}
+            {t(`createRide.group.joinModes.${jm.mode}`)}
           </Button>
         ))}
       </View>
 
       <TextInput
-        label="Max participants (1–6)"
+        label={t("createRide.group.maxParticipants")}
         value={draft.max_participants?.toString() ?? "4"}
         onChangeText={(v) => onChange({ max_participants: v === "" ? undefined : Number(v) })}
         keyboardType="numeric"
       />
 
       <Text style={{ opacity: 0.7 }}>
-        Recommendation: keep it small (4) for easier matching.
+        {t("createRide.group.recommendation")}
       </Text>
     </View>
   );

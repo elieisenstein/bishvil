@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View } from "react-native";
+import { View, Alert } from "react-native";
 import { Text, TextInput, useTheme, Button } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import * as Location from "expo-location";
@@ -23,7 +23,7 @@ export default function StepWhere({
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        alert('Permission to access location was denied');
+        Alert.alert(t("common.error"), t("createRide.where.locationDenied"));
         return;
       }
 
@@ -33,7 +33,7 @@ export default function StepWhere({
         start_lat: location.coords.latitude,
       });
     } catch (error) {
-      alert('Failed to get location. Please try again.');
+      Alert.alert(t("common.error"), t("createRide.where.locationFailed"));
     } finally {
       setLoadingLocation(false);
     }
@@ -99,7 +99,7 @@ export default function StepWhere({
         disabled={loadingLocation}
         contentStyle={{ paddingVertical: 4 }}
       >
-        🎯 Use Current Location
+        {t("createRide.where.useCurrentLocation")}
       </Button>
 
       <Button
@@ -108,7 +108,7 @@ export default function StepWhere({
         onPress={() => setMapModalVisible(true)}
         contentStyle={{ paddingVertical: 4 }}
       >
-        📍 Choose on Map
+        {t("createRide.where.chooseOnMap")}
       </Button>
 
       {/* Map Picker Modal */}

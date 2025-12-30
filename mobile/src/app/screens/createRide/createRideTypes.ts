@@ -32,7 +32,7 @@ export function draftIsStepValid(step: number, d: CreateRideDraft): boolean {
         && d.start_lat !== undefined && d.start_lng !== undefined
         && d.start_lat !== 0 && d.start_lng !== 0;
     case 2: // Details
-      return !!d.ride_type && !!d.skill_level;
+      return !!d.ride_type && !!d.skill_level && !!d.pace;
     case 3: // Group
       return !!d.join_mode && typeof d.max_participants === "number" && d.max_participants >= 1 && d.max_participants <= 6;
     case 4: // Review

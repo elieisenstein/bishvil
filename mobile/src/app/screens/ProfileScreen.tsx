@@ -17,6 +17,7 @@ const SKILL_LEVELS = ["Beginner", "Intermediate", "Advanced"];
 const PACE_OPTIONS = ["Slow", "Moderate", "Fast"];
 
 export default function ProfileScreen() {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
@@ -31,7 +32,6 @@ export default function ProfileScreen() {
   const [birthYear, setBirthYear] = useState<string>("");
   const [selectedGender, setSelectedGender] = useState<string | null>(null);
   
-  const { t } = useTranslation();
   const nav = useNavigation<any>();
   const theme = useTheme();
 
@@ -42,7 +42,6 @@ export default function ProfileScreen() {
       const p = await fetchMyProfile();
       
       if (!p) {
-        // No profile row exists yet - initialize with empty values
         setProfile(null);
         setDisplayName("");
         setBio("");
@@ -55,8 +54,6 @@ export default function ProfileScreen() {
       }
       
       setProfile(p);
-      
-      // Populate form from profile
       setDisplayName(p.display_name ?? "");
       setBio(p.bio ?? "");
       setSelectedRideTypes(stringToRideTypes(p.ride_type));
@@ -65,7 +62,7 @@ export default function ProfileScreen() {
       setBirthYear(p.birth_year ? String(p.birth_year) : "");
       setSelectedGender(p.gender);
     } catch (e: any) {
-      setErr(e?.message ?? "Failed to load profile");
+      setErr(e?.message ?? t("profile.loadingProfile"));
     } finally {
       setLoading(false);
     }
@@ -90,7 +87,7 @@ export default function ProfileScreen() {
       };
       
       await updateMyProfile(updates as any);
-      await loadProfile(); // Reload to confirm
+      await loadProfile();
     } catch (e: any) {
       setErr(e?.message ?? "Failed to update profile");
     } finally {
@@ -109,7 +106,7 @@ export default function ProfileScreen() {
   if (loading) {
     return (
       <View style={{ flex: 1, padding: 16, backgroundColor: theme.colors.background }}>
-        <Text>Loading profile...</Text>
+        <Text>{t("profile.loadingProfile")}</Text>
       </View>
     );
   }
@@ -135,12 +132,12 @@ export default function ProfileScreen() {
       </Button>
 
       <Text variant="headlineSmall" style={{ marginBottom: 16 }}>
-        Profile
+        {t("profile.title")}
       </Text>
 
       {/* Display Name */}
       <TextInput
-        label="Display Name"
+        label={t("profile.displayName")}
         value={displayName}
         onChangeText={setDisplayName}
         style={{ marginBottom: 16 }}
@@ -148,13 +145,13 @@ export default function ProfileScreen() {
 
       {/* About Me */}
       <TextInput
-        label="About Me (Optional)"
+        label={t("profile.aboutMe")}
         value={bio}
         onChangeText={setBio}
         multiline
         numberOfLines={3}
         maxLength={500}
-        placeholder="Tell others about yourself, your riding style, favorite trails..."
+        placeholder={t("profile.aboutMePlaceholder")}
         style={{ marginBottom: 8 }}
       />
       <Text style={{ opacity: 0.6, fontSize: 12, marginBottom: 16, textAlign: 'right' }}>
@@ -163,12 +160,12 @@ export default function ProfileScreen() {
 
       <Divider style={{ marginBottom: 16 }} />
 
-      {/* Ride Types - Multi-select */}
+      {/* Ride Types */}
       <Text variant="titleMedium" style={{ marginBottom: 8 }}>
-        Ride Types
+        {t("profile.rideTypes")}
       </Text>
       <Text style={{ opacity: 0.7, marginBottom: 8, fontSize: 12 }}>
-        Select all that apply
+        {t("profile.rideTypesHelp")}
       </Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
         {RIDE_TYPES.map(type => (
@@ -192,16 +189,16 @@ export default function ProfileScreen() {
                 : (type === "Road" ? "#2196F3" : theme.colors.onSurface)
             }}
           >
-            {type}
+            {t(`rideTypes.${type}`)}
           </Chip>
         ))}
       </View>
 
       <Divider style={{ marginBottom: 16 }} />
 
-      {/* Skill Level - Single select */}
+      {/* Skill Level */}
       <Text variant="titleMedium" style={{ marginBottom: 8 }}>
-        Skill Level
+        {t("profile.skillLevel")}
       </Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
         {SKILL_LEVELS.map(level => (
@@ -222,16 +219,16 @@ export default function ProfileScreen() {
                 : theme.colors.onSurface
             }}
           >
-            {level}
+            {t(`skillLevels.${level}`)}
           </Chip>
         ))}
       </View>
 
       <Divider style={{ marginBottom: 16 }} />
 
-      {/* Pace - Single select */}
+      {/* Pace */}
       <Text variant="titleMedium" style={{ marginBottom: 8 }}>
-        Pace Preference
+        {t("profile.pace")}
       </Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
         {PACE_OPTIONS.map(pace => (
@@ -252,7 +249,7 @@ export default function ProfileScreen() {
                 : theme.colors.onSurface
             }}
           >
-            {pace}
+            {t(`paceOptions.${pace}`)}
           </Chip>
         ))}
       </View>
@@ -261,10 +258,10 @@ export default function ProfileScreen() {
 
       {/* Birth Year */}
       <Text variant="titleMedium" style={{ marginBottom: 8 }}>
-        Birth Year
+        {t("profile.birthYear")}
       </Text>
       <TextInput
-        label="Year (e.g., 1990)"
+        label={t("profile.birthYearPlaceholder")}
         value={birthYear}
         onChangeText={setBirthYear}
         keyboardType="numeric"
@@ -274,9 +271,9 @@ export default function ProfileScreen() {
 
       <Divider style={{ marginBottom: 16 }} />
 
-      {/* Gender - Optional */}
+      {/* Gender */}
       <Text variant="titleMedium" style={{ marginBottom: 8 }}>
-        Gender (Optional)
+        {t("profile.gender")}
       </Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
         <Chip
@@ -295,7 +292,7 @@ export default function ProfileScreen() {
               : theme.colors.onSurface
           }}
         >
-          Male
+          {t("profile.genderOptions.male")}
         </Chip>
         <Chip
           selected={selectedGender === "Female"}
@@ -313,7 +310,7 @@ export default function ProfileScreen() {
               : theme.colors.onSurface
           }}
         >
-          Female
+          {t("profile.genderOptions.female")}
         </Chip>
         <Chip
           selected={selectedGender === null}
@@ -331,7 +328,7 @@ export default function ProfileScreen() {
               : theme.colors.onSurface
           }}
         >
-          Skip
+          {t("profile.genderOptions.skip")}
         </Chip>
       </View>
 
@@ -345,7 +342,7 @@ export default function ProfileScreen() {
         disabled={saving || !displayName.trim()}
         style={{ marginBottom: 12 }}
       >
-        Save Profile
+        {t("profile.saveProfile")}
       </Button>
 
       {/* Sign Out */}

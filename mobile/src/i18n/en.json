@@ -137,6 +137,10 @@
     "reject": "Reject",
     "share": "Share Ride",
     "shareWhatsApp": "Share on WhatsApp",
+    "joinModes": {
+      "express": "Express",
+      "approval": "Approval"
+    },
     "actions": {
       "join": "Join",
       "askToJoin": "Ask to Join",
@@ -253,21 +257,21 @@
     }
   },
   "rideTypes": {
-    "xc": "XC",
-    "trail": "Trail",
-    "enduro": "Enduro",
-    "gravel": "Gravel",
-    "road": "Road"
+    "XC": "XC",
+    "Trail": "Trail",
+    "Enduro": "Enduro",
+    "Gravel": "Gravel",
+    "Road": "Road"
   },
   "skillLevels": {
-    "beginner": "Beginner",
-    "intermediate": "Intermediate",
-    "advanced": "Advanced"
+    "Beginner": "Beginner",
+    "Intermediate": "Intermediate",
+    "Advanced": "Advanced"
   },
   "paceOptions": {
-    "slow": "Slow",
-    "moderate": "Moderate",
-    "fast": "Fast"
+    "Slow": "Slow",
+    "Moderate": "Moderate",
+    "Fast": "Fast"
   },
   "timeRanges": {
     "today": "Today",

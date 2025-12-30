@@ -74,23 +74,22 @@ export default function MyRidesScreen() {
   const getStatusColor = (status: MyRideStatus): string => {
     switch (status) {
       case "owner":
-        return "#FF6B35"; // Orange
+        return "#FF6B35";
       case "joined":
-        return "#4CAF50"; // Green
+        return "#4CAF50";
       case "requested":
-        return "#FFC107"; // Yellow
+        return "#FFC107";
     }
   };
 
   const getStatusLabel = (status: MyRideStatus): string => {
-    const isHebrew = t("language") === "he";
     switch (status) {
       case "owner":
-        return isHebrew ? "מארגן" : "OWNER";
+        return t("myRides.statusLabels.owner");
       case "joined":
-        return isHebrew ? "משתתף" : "JOINED";
+        return t("myRides.statusLabels.joined");
       case "requested":
-        return isHebrew ? "ממתין" : "REQUESTED";
+        return t("myRides.statusLabels.requested");
     }
   };
 
@@ -113,15 +112,21 @@ export default function MyRidesScreen() {
         <Card.Content>
           <View style={styles.cardHeader}>
             <Text variant="titleMedium" style={{ color: theme.colors.onSurface, flex: 1 }}>
-              {ride.ride_type} · {ride.skill_level}
+              {t(`rideTypes.${ride.ride_type}`)} · {t(`skillLevels.${ride.skill_level}`)}
             </Text>
             <View style={[styles.badge, { backgroundColor: statusColor }]}>
               <Text style={styles.badgeText}>{statusLabel}</Text>
             </View>
           </View>
 
+          {ride.pace && (
+            <Text style={{ opacity: 0.8, marginTop: 4 }}>
+              {t("profile.pace")}: {t(`paceOptions.${ride.pace}`)}
+            </Text>
+          )}
+
           <Text style={{ opacity: 0.8, marginTop: 4 }}>
-            When: {(() => {
+            {t("rideDetails.when")}: {(() => {
               const startDate = new Date(ride.start_at);
               const endDate = new Date(startDate);
               endDate.setHours(endDate.getHours() + ride.duration_hours);
@@ -139,11 +144,11 @@ export default function MyRidesScreen() {
           </Text>
 
           <Text style={{ opacity: 0.8 }}>
-            Where: {ride.start_name || `${ride.start_lat.toFixed(4)}, ${ride.start_lng.toFixed(4)}`}
+            {t("rideDetails.where")}: {ride.start_name || `${ride.start_lat.toFixed(4)}, ${ride.start_lng.toFixed(4)}`}
           </Text>
 
           <Text style={{ opacity: 0.8 }}>
-            Group: {ride.join_mode} · max {ride.max_participants}
+            {t("rideDetails.group")}: {t(`rideDetails.joinModes.${ride.join_mode.toLowerCase()}`)} · {t("rideDetails.max")} {ride.max_participants}
           </Text>
         </Card.Content>
       </Card>
@@ -152,12 +157,23 @@ export default function MyRidesScreen() {
 
   const rides = getCurrentRides();
 
+  function getEmptyMessage(): string {
+    switch (selectedSection) {
+      case "organizing":
+        return t("myRides.emptyStates.organizing");
+      case "joined":
+        return t("myRides.emptyStates.joined");
+      case "requested":
+        return t("myRides.emptyStates.requested");
+    }
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       {/* Header */}
       <View style={styles.header}>
         <Text variant="headlineMedium" style={{ color: theme.colors.onBackground }}>
-          My Rides
+          {t("screens.myRides.title")}
         </Text>
       </View>
 
@@ -169,15 +185,15 @@ export default function MyRidesScreen() {
           buttons={[
             {
               value: "organizing",
-              label: t("myRides.organizing") || "Organizing",
+              label: t("myRides.organizing"),
             },
             {
               value: "joined",
-              label: t("myRides.joined") || "Joined",
+              label: t("myRides.joined"),
             },
             {
               value: "requested",
-              label: t("myRides.requested") || "Requested",
+              label: t("myRides.requested"),
             },
           ]}
         />
@@ -191,9 +207,7 @@ export default function MyRidesScreen() {
       ) : rides.length === 0 ? (
         <View style={styles.centered}>
           <Text style={{ opacity: 0.6, textAlign: "center" }}>
-            {selectedSection === "organizing" && "You haven't created any rides yet"}
-            {selectedSection === "joined" && "You haven't joined any rides yet"}
-            {selectedSection === "requested" && "No pending requests"}
+            {getEmptyMessage()}
           </Text>
         </View>
       ) : (

@@ -2,14 +2,14 @@ import React, { useEffect, useState } from "react";
 import { ScrollView, View, Linking, Alert } from "react-native";
 import { ActivityIndicator, Button, Card, Text, useTheme, Divider } from "react-native-paper";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { useTranslation } from "react-i18next"; // ← NEW
+import { useTranslation } from "react-i18next";
 
 import { formatDateTimeLocal } from "../../lib/datetime";
 import { supabase } from "../../lib/supabase";
 import type { Ride } from "../../lib/rides";
 import type { FeedStackParamList } from "../navigation/AppNavigator";
 import IsraelHikingMapView from "../../components/IsraelHikingMapView";
-import { ShareRideButton } from "../../components/ShareRideButton"; // ← NEW
+import { ShareRideButton } from "../../components/ShareRideButton";
 import { 
   joinOrRequestRide, 
   leaveRide, 
@@ -28,8 +28,8 @@ type RideDetailsRoute = RouteProp<FeedStackParamList, "RideDetails">;
 export default function RideDetailsScreen() {
   const route = useRoute<RideDetailsRoute>();
   const { rideId } = route.params;
-  const { i18n } = useTranslation(); // ← NEW
-  const isHebrew = i18n.language === 'he'; // ← NEW
+  const { t, i18n } = useTranslation();
+  const isHebrew = i18n.language === 'he';
 
   const [ride, setRide] = useState<Ride | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,25 +46,25 @@ export default function RideDetailsScreen() {
   // Navigation function - opens Google Maps or Waze
   function openNavigation(lat: number, lng: number, name: string) {
     Alert.alert(
-      "Navigate to Meeting Point",
-      `Get directions to: ${name}`,
+      t("rideDetails.navigation.title"),
+      `${t("rideDetails.navigation.message")} ${name}`,
       [
         {
-          text: "Google Maps",
+          text: t("rideDetails.navigation.googleMaps"),
           onPress: () => {
             const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
             Linking.openURL(url);
           }
         },
         {
-          text: "Waze",
+          text: t("rideDetails.navigation.waze"),
           onPress: () => {
             const url = `https://www.waze.com/ul?ll=${lat},${lng}&navigate=yes`;
             Linking.openURL(url);
           }
         },
         {
-          text: "Cancel",
+          text: t("common.cancel"),
           style: "cancel"
         }
       ]
@@ -125,7 +125,6 @@ export default function RideDetailsScreen() {
       setJoining(true);
       await joinOrRequestRide(ride.id, ride.join_mode);
       
-      // Reload all data
       await loadRideData();
     } catch (e: any) {
       console.log("Join error:", e?.message ?? e);
@@ -139,8 +138,6 @@ export default function RideDetailsScreen() {
 
     try {
       await leaveRide(ride.id);
-      
-      // Reload all data
       await loadRideData();
     } catch (e: any) {
       console.log("Leave error:", e?.message ?? e);
@@ -153,8 +150,6 @@ export default function RideDetailsScreen() {
     try {
       setCancelling(true);
       await cancelRide(ride.id);
-      
-      // Reload to show cancelled status
       await loadRideData();
     } catch (e: any) {
       console.log("Cancel error:", e?.message ?? e);
@@ -169,8 +164,6 @@ export default function RideDetailsScreen() {
     try {
       setApprovingUserId(userId);
       await approveJoinRequest(ride.id, userId);
-      
-      // Reload all data to update UI
       await loadRideData();
     } catch (e: any) {
       console.log("Approve error:", e?.message ?? e);
@@ -185,8 +178,6 @@ export default function RideDetailsScreen() {
     try {
       setApprovingUserId(userId);
       await rejectJoinRequest(ride.id, userId);
-      
-      // Reload all data to update UI
       await loadRideData();
     } catch (e: any) {
       console.log("Reject error:", e?.message ?? e);
@@ -214,7 +205,7 @@ export default function RideDetailsScreen() {
     return (
       <View style={{ flex: 1, padding: 16, backgroundColor: theme.colors.background }}>
         <Text style={{ color: theme.colors.onBackground }}>
-          Ride not found (or you don't have permission).
+          {t("rideDetails.notFound")}
         </Text>
       </View>
     );
@@ -223,8 +214,6 @@ export default function RideDetailsScreen() {
   const joinedParticipants = participants.filter(p => p.status === 'joined');
   const pendingRequests = participants.filter(p => p.status === 'requested');
   const isOwner = currentUserId === ride.owner_id;
-
-  // ← NEW: Generate share title
   const shareTitle = `${ride.ride_type} · ${ride.skill_level}`;
 
   return (
@@ -235,11 +224,12 @@ export default function RideDetailsScreen() {
       <Card>
         <Card.Content style={{ gap: 8 }}>
           <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>
-            {ride.ride_type} · {ride.skill_level}
+            {t(`rideTypes.${ride.ride_type}`)} · {t(`skillLevels.${ride.skill_level}`)}
+            {ride.pace ? ` · ${t(`paceOptions.${ride.pace}`)}` : ""}
           </Text>
 
           <Text style={{ opacity: 0.8 }}>
-            When: {(() => {
+            {t("rideDetails.when")}: {(() => {
               const startDate = new Date(ride.start_at);
               const endDate = new Date(startDate);
               endDate.setHours(endDate.getHours() + ride.duration_hours);
@@ -257,15 +247,15 @@ export default function RideDetailsScreen() {
           </Text>
 
           <Text style={{ opacity: 0.8 }}>
-            Where: {ride.start_name ?? `${ride.start_lat.toFixed(4)}, ${ride.start_lng.toFixed(4)}`}
+            {t("rideDetails.where")}: {ride.start_name ?? `${ride.start_lat.toFixed(4)}, ${ride.start_lng.toFixed(4)}`}
           </Text>
 
           <Text style={{ opacity: 0.8 }}>
-            Group: {ride.join_mode} · max {ride.max_participants}
+            {t("rideDetails.group")}: {t(`rideDetails.joinModes.${ride.join_mode.toLowerCase()}`)} · {t("rideDetails.max")} {ride.max_participants}
           </Text>
 
           <Text style={{ opacity: 0.8 }}>
-            Participants: {joinedCount ?? "—"} / {ride.max_participants}
+            {t("rideDetails.participants")}: {joinedCount ?? "—"} / {ride.max_participants}
           </Text>
 
           {(ride.distance_km != null || ride.elevation_m != null) && (
@@ -278,7 +268,7 @@ export default function RideDetailsScreen() {
 
           {ride.notes ? <Text style={{ opacity: 0.9 }}>{ride.notes}</Text> : null}
 
-          {/* ============ SHARE BUTTONS (NEW) ============ */}
+          {/* Share Buttons */}
           <Divider style={{ marginVertical: 12 }} />
           <ShareRideButton 
             rideId={ride.id}
@@ -286,12 +276,12 @@ export default function RideDetailsScreen() {
             isHebrew={isHebrew}
           />
 
-          {/* ============ MEETING LOCATION MAP ============ */}
+          {/* Meeting Location Map */}
           {ride.start_lat != null && ride.start_lng != null ? (
             <>
               <Divider style={{ marginVertical: 12 }} />
               <Text variant="titleMedium" style={{ color: theme.colors.onSurface, marginBottom: 8 }}>
-                Meeting Location
+                {t("rideDetails.meetingLocation")}
               </Text>
               
               <IsraelHikingMapView
@@ -309,38 +299,38 @@ export default function RideDetailsScreen() {
               <Button
                 mode="contained"
                 icon="navigation"
-                onPress={() => openNavigation(ride.start_lat, ride.start_lng, ride.start_name || "Meeting Point")}
+                onPress={() => openNavigation(ride.start_lat, ride.start_lng, ride.start_name || t("rideDetails.meetingLocation"))}
                 style={{ marginTop: 12 }}
               >
-                Get Directions to Meeting Point
+                {t("rideDetails.getDirections")}
               </Button>
             </>
           ) : null}
 
-          {/* ============ PARTICIPANTS LIST ============ */}
+          {/* Participants List */}
           <Divider style={{ marginVertical: 8 }} />
           <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
-            Participants
+            {t("rideDetails.participants")}
           </Text>
           {joinedParticipants.map((p) => (
             <Text key={p.user_id} style={{ opacity: 0.8, paddingLeft: 8 }}>
-              • {p.display_name} {p.role === 'owner' ? '(Owner)' : ''}
+              • {p.display_name} {p.role === 'owner' ? `(${t("myRides.statusLabels.owner")})` : ''}
             </Text>
           ))}
           {joinedParticipants.length === 1 && joinedParticipants[0]?.role === 'owner' && (
             <Text style={{ opacity: 0.6, paddingLeft: 8, fontStyle: 'italic', marginTop: 4 }}>
               {isOwner 
-                ? "Waiting for others to join..." 
-                : "No one else has joined yet. Be the first!"}
+                ? t("rideDetails.status.waitingForOthers")
+                : t("rideDetails.status.beTheFirst")}
             </Text>
           )}
 
-          {/* ============ PENDING REQUESTS (OWNER ONLY) ============ */}
+          {/* Pending Requests (Owner Only) */}
           {ride.join_mode === 'approval' && isOwner && pendingRequests.length > 0 && (
             <>
               <Divider style={{ marginVertical: 8 }} />
               <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
-                Pending Requests
+                {t("rideDetails.pendingRequests")}
               </Text>
               {pendingRequests.map((p) => (
                 <View 
@@ -362,7 +352,7 @@ export default function RideDetailsScreen() {
                     disabled={approvingUserId !== null}
                     onPress={() => handleApprove(p.user_id)}
                   >
-                    Approve
+                    {t("rideDetails.approve")}
                   </Button>
                   <Button 
                     mode="outlined" 
@@ -371,14 +361,14 @@ export default function RideDetailsScreen() {
                     disabled={approvingUserId !== null}
                     onPress={() => handleReject(p.user_id)}
                   >
-                    Reject
+                    {t("rideDetails.reject")}
                   </Button>
                 </View>
               ))}
             </>
           )}
 
-          {/* ============ JOIN/LEAVE/CANCEL BUTTONS ============ */}
+          {/* Join/Leave/Cancel Buttons */}
           <View style={{ flexDirection: "row", gap: 12, marginTop: 12 }}>
             {!isOwner && (
               <Button
@@ -389,12 +379,12 @@ export default function RideDetailsScreen() {
                 style={{ flex: 1 }}
               >
                 {myStatus === "joined"
-                  ? "Joined"
+                  ? t("rideDetails.actions.joined")
                   : myStatus === "requested"
-                  ? "Requested"
+                  ? t("rideDetails.actions.requested")
                   : ride.join_mode === "express"
-                  ? "Join"
-                  : "Ask to join"}
+                  ? t("rideDetails.actions.join")
+                  : t("rideDetails.actions.askToJoin")}
               </Button>
             )}
 
@@ -410,7 +400,7 @@ export default function RideDetailsScreen() {
                 }
                 style={{ flex: 1 }}
               >
-                Leave
+                {t("rideDetails.actions.leave")}
               </Button>
             )}
 
@@ -422,7 +412,7 @@ export default function RideDetailsScreen() {
                 disabled={cancelling || ride.status === 'cancelled'}
                 style={{ flex: 1 }}
               >
-                {ride.status === 'cancelled' ? 'Cancelled' : 'Cancel Ride'}
+                {ride.status === 'cancelled' ? t("rideDetails.actions.cancelled") : t("rideDetails.actions.cancelRide")}
               </Button>
             )}
           </View>

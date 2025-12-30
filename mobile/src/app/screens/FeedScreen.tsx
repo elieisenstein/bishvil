@@ -3,6 +3,7 @@ import { RefreshControl, ScrollView, View } from "react-native";
 import { Card, Text, useTheme, Button, Portal, Modal, Divider, Icon } from "react-native-paper";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 import { listFilteredRides, Ride, type RideFilters } from "../../lib/rides";
 import { formatDateTimeLocal } from "../../lib/datetime";
 import type { FeedStackParamList } from "../navigation/AppNavigator";
@@ -13,6 +14,7 @@ const SKILL_LEVELS = ["Beginner", "Intermediate", "Advanced"];
 const DAY_OPTIONS = [1, 3, 7, 14, 30];
 
 export default function FeedScreen() {
+  const { t } = useTranslation();
   const [rides, setRides] = useState<Ride[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
@@ -21,10 +23,9 @@ export default function FeedScreen() {
 
   // Current active filters
   const [filters, setFilters] = useState<RideFilters>({
-    rideTypes: [], // Empty = all types
-    skillLevels: [], // Empty = all skills (will store 0 or 1 item after update)
+    rideTypes: [],
+    skillLevels: [],
     maxDays: 7,
-    // No location filter by default
   });
 
   // Draft filters (for editing in modal before applying)
@@ -55,41 +56,40 @@ export default function FeedScreen() {
 
     // Ride types
     if (filters.rideTypes.length === 0) {
-      parts.push("All types");
+      parts.push(t("feed.filterSummary.allTypes"));
     } else if (filters.rideTypes.length === RIDE_TYPES.length) {
-      parts.push("All types");
+      parts.push(t("feed.filterSummary.allTypes"));
     } else {
       parts.push(filters.rideTypes.join(", "));
     }
 
     // Skill levels
     if (filters.skillLevels.length === 0) {
-      parts.push("All skills");
+      parts.push(t("feed.filterSummary.allSkills"));
     } else if (filters.skillLevels.length === SKILL_LEVELS.length) {
-      parts.push("All skills");
+      parts.push(t("feed.filterSummary.allSkills"));
     } else {
       parts.push(filters.skillLevels.join(", "));
     }
 
     // Time range
     if (filters.maxDays === 1) {
-      parts.push("Today");
+      parts.push(t("timeRanges.today"));
     } else {
-      parts.push(`${filters.maxDays}d`);
+      parts.push(t("timeRanges.days", { count: filters.maxDays }));
     }
 
     return parts.join(" • ");
   }
 
   function openFilterModal() {
-    setDraftFilters(filters); // Copy current filters to draft
+    setDraftFilters(filters);
     setFilterModalVisible(true);
   }
 
   function applyFilters() {
-    setFilters(draftFilters); // Apply draft to active
+    setFilters(draftFilters);
     setFilterModalVisible(false);
-    // Feed will auto-reload via useEffect dependency on filters
   }
 
   function resetFilters() {
@@ -112,11 +112,9 @@ export default function FeedScreen() {
 
   function toggleSkillLevel(level: string) {
     const current = draftFilters.skillLevels;
-    // Single select behavior - if clicking same level, deselect (empty = all)
     if (current.length === 1 && current[0] === level) {
       setDraftFilters({ ...draftFilters, skillLevels: [] });
     } else {
-      // Select this level only
       setDraftFilters({ ...draftFilters, skillLevels: [level] });
     }
   }
@@ -138,14 +136,14 @@ export default function FeedScreen() {
           borderRadius: 8,
         }}>
           <Text style={{ flex: 1, color: theme.colors.onSurfaceVariant, fontSize: 12 }}>
-            Filters: {getFilterSummary()}
+            {t("feed.filters")}: {getFilterSummary()}
           </Text>
           <Button 
             mode="contained" 
             compact
             onPress={openFilterModal}
           >
-            Edit
+            {t("common.edit")}
           </Button>
         </View>
 
@@ -159,19 +157,19 @@ export default function FeedScreen() {
                   variant="titleMedium" 
                   style={{ marginTop: 16, marginBottom: 8, textAlign: 'center' }}
                 >
-                  No rides found
+                  {t("feed.noRides.title")}
                 </Text>
                 <Text 
                   style={{ opacity: 0.7, textAlign: 'center', marginBottom: 16 }}
                 >
-                  Try adjusting your filters or be the first to create a ride!
+                  {t("feed.noRides.message")}
                 </Text>
                 <Button 
                   mode="outlined" 
                   onPress={openFilterModal}
                   icon="filter-variant"
                 >
-                  Adjust Filters
+                  {t("feed.noRides.adjustFilters")}
                 </Button>
               </Card.Content>
             </Card>
@@ -183,11 +181,12 @@ export default function FeedScreen() {
               >
                 <Card.Content style={{ gap: 6 }}>
                   <Text variant="titleMedium">
-                    {r.ride_type} · {r.skill_level}
+                    {t(`rideTypes.${r.ride_type}`)} · {t(`skillLevels.${r.skill_level}`)}
+                    {r.pace ? ` · ${t(`paceOptions.${r.pace}`)}` : ""}
                   </Text>
 
                   <Text style={{ opacity: 0.8 }}>
-                    When: {(() => {
+                    {t("feed.rideCard.when")}: {(() => {
                       const startDate = new Date(r.start_at);
                       const endDate = new Date(startDate);
                       endDate.setHours(endDate.getHours() + r.duration_hours);
@@ -205,19 +204,18 @@ export default function FeedScreen() {
                   </Text>
 
                   <Text style={{ opacity: 0.8 }}>
-                    Where: {r.start_name || "Location TBD"}
+                    {t("feed.rideCard.where")}: {r.start_name || "Location TBD"}
                   </Text>
 
                   {r.notes && (
                     <Text style={{ opacity: 0.8, fontStyle: 'italic' }}>
-                      Route: {r.notes}
+                      {t("feed.rideCard.route")}: {r.notes}
                     </Text>
                   )}
 
                   <Text style={{ opacity: 0.8 }}>
-                    Group: {r.join_mode} · max {r.max_participants}
+                    {t("feed.rideCard.group")}: {t(`rideDetails.joinModes.${r.join_mode.toLowerCase()}`)} · {t("feed.rideCard.max")} {r.max_participants}
                   </Text>
-
                   {r.distance_km != null || r.elevation_m != null ? (
                     <Text style={{ opacity: 0.8 }}>
                       {r.distance_km != null ? `${r.distance_km} km` : ""}
@@ -245,15 +243,15 @@ export default function FeedScreen() {
           }}
         >
           <Text variant="titleLarge" style={{ marginBottom: 16 }}>
-            Filter Rides
+            {t("feed.filterModal.title")}
           </Text>
 
           {/* Ride Types */}
           <Text variant="titleMedium" style={{ marginTop: 8, marginBottom: 8 }}>
-            Ride Types
+            {t("feed.filterModal.rideTypes")}
           </Text>
           <Text style={{ opacity: 0.7, marginBottom: 8, fontSize: 12 }}>
-            Select none for all types
+            {t("feed.filterModal.rideTypesHelp")}
           </Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
             {RIDE_TYPES.map(type => (
@@ -264,7 +262,7 @@ export default function FeedScreen() {
                 buttonColor={type === "Road" && draftFilters.rideTypes.includes(type) ? "#2196F3" : undefined}
                 textColor={type === "Road" && !draftFilters.rideTypes.includes(type) ? "#2196F3" : undefined}
               >
-                {type}
+                {t(`rideTypes.${type}`)}
               </Button>
             ))}
           </View>
@@ -273,10 +271,10 @@ export default function FeedScreen() {
 
           {/* Skill Levels */}
           <Text variant="titleMedium" style={{ marginBottom: 8 }}>
-            Skill Level
+            {t("feed.filterModal.skillLevel")}
           </Text>
           <Text style={{ opacity: 0.7, marginBottom: 8, fontSize: 12 }}>
-            Select one or leave blank for all
+            {t("feed.filterModal.skillLevelHelp")}
           </Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
             {SKILL_LEVELS.map(level => (
@@ -285,7 +283,7 @@ export default function FeedScreen() {
                 mode={draftFilters.skillLevels.includes(level) ? "contained" : "outlined"}
                 onPress={() => toggleSkillLevel(level)}
               >
-                {level}
+                {t(`skillLevels.${level}`)}
               </Button>
             ))}
           </View>
@@ -294,7 +292,7 @@ export default function FeedScreen() {
 
           {/* Time Range */}
           <Text variant="titleMedium" style={{ marginBottom: 8 }}>
-            Time Range
+            {t("feed.filterModal.timeRange")}
           </Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
             {DAY_OPTIONS.map(days => (
@@ -304,7 +302,7 @@ export default function FeedScreen() {
                 onPress={() => setDraftFilters({ ...draftFilters, maxDays: days })}
                 style={{ minWidth: 80 }}
               >
-                {days === 1 ? "Today" : `${days}d`}
+                {days === 1 ? t("timeRanges.today") : t("timeRanges.days", { count: days })}
               </Button>
             ))}
           </View>
@@ -316,16 +314,16 @@ export default function FeedScreen() {
               onPress={resetFilters}
               style={{ flex: 1 }}
             >
-              Reset
+              {t("common.reset")}
             </Button>
             <Button 
-                mode="contained" 
-                onPress={applyFilters}
-                style={{ flex: 1 }}
-              >
-                Apply
-              </Button>
-            </View>
+              mode="contained" 
+              onPress={applyFilters}
+              style={{ flex: 1 }}
+            >
+              {t("common.apply")}
+            </Button>
+          </View>
         </Modal>
       </Portal>
     </>

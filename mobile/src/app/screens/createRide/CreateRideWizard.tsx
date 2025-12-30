@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { View, I18nManager } from "react-native";
+import { View, I18nManager, Alert } from "react-native";
 import { Button, Divider, Text, useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
@@ -18,7 +18,6 @@ import StepReview from "./steps/StepReview";
 type StepKey = "when" | "where" | "details" | "group" | "review";
 
 function getInitialDraft(): CreateRideDraft {
-  // Set default date to 1 hour from now
   const defaultDate = new Date();
   defaultDate.setHours(defaultDate.getHours() + 1, 0, 0, 0);
   
@@ -30,8 +29,8 @@ function getInitialDraft(): CreateRideDraft {
     distance_km: null,
     elevation_m: null,
     start_name: null,
-    start_at: defaultDate.toISOString(), // Set default date immediately
-    duration_hours: 2, // Default: 2 hours
+    start_at: defaultDate.toISOString(),
+    duration_hours: 2,
   };
 }
 
@@ -42,27 +41,24 @@ export default function CreateRideWizard() {
 
   const steps: { key: StepKey; title: string }[] = useMemo(
     () => [
-      { key: "when", title: "When" },
-      { key: "where", title: "Where" },
-      { key: "details", title: "Details" },
-      { key: "group", title: "Group" },
-      { key: "review", title: "Review" },
+      { key: "when", title: t("createRide.steps.when") },
+      { key: "where", title: t("createRide.steps.where") },
+      { key: "details", title: t("createRide.steps.details") },
+      { key: "group", title: t("createRide.steps.group") },
+      { key: "review", title: t("createRide.steps.review") },
     ],
-    []
+    [t]
   );
 
   const [stepIndex, setStepIndex] = useState(0);
   const [draft, setDraft] = useState<CreateRideDraft>(getInitialDraft());
-
   const [submitting, setSubmitting] = useState(false);
   const canGoNext = draftIsStepValid(stepIndex, draft);
 
   const stepTitle = steps[stepIndex]?.title ?? "";
 
-  // Reset wizard when user navigates back to Create tab
   useFocusEffect(
     React.useCallback(() => {
-      // Reset to initial state when tab gains focus
       setStepIndex(0);
       setDraft(getInitialDraft());
     }, [])
@@ -73,7 +69,6 @@ export default function CreateRideWizard() {
   }
 
   async function onPublish() {
-    // Final validation: ensure all required fields exist
     const requiredOk =
       draftIsStepValid(0, draft) &&
       draftIsStepValid(1, draft) &&
@@ -81,7 +76,6 @@ export default function CreateRideWizard() {
       draftIsStepValid(3, draft);
 
     if (!requiredOk) {
-      // If something is missing, jump to the first invalid step
       for (let i = 0; i < 4; i++) {
         if (!draftIsStepValid(i, draft)) {
           setStepIndex(i);
@@ -93,41 +87,36 @@ export default function CreateRideWizard() {
 
     const { data: sessionData } = await supabase.auth.getSession();
     const userId = sessionData.session?.user.id;
-    if (!userId) throw new Error("Not signed in");
+    if (!userId) {
+      Alert.alert(t("common.error"), t("createRide.validation.notSignedIn"));
+      return;
+    }
 
     setSubmitting(true);
     try {
       const ride = await createRide({
         owner_id: userId,
         status: "published",
-
         start_at: draft.start_at!,
         duration_hours: draft.duration_hours!,
-        // ✅ FIXED: Use actual coordinates from draft, not dummy (0,0)
         start_lat: draft.start_lat!,
         start_lng: draft.start_lng!,
         start_name: draft.start_name!,
-
         ride_type: draft.ride_type!,
         skill_level: draft.skill_level!,
         pace: draft.pace ?? null,
-
         distance_km: draft.distance_km ?? null,
         elevation_m: draft.elevation_m ?? null,
-
         join_mode: draft.join_mode!,
         max_participants: draft.max_participants!,
-
         notes: draft.notes ?? null,
       });
 
-      // Reset wizard after publish
       setDraft(getInitialDraft());
       setStepIndex(0);
 
       console.log("Ride created:", ride.id);
 
-      // 🎯 Navigate to the newly created ride's detail page
       navigation.navigate("MyRidesStack", {
         screen: "RideDetails",
         params: { rideId: ride.id }
@@ -139,14 +128,14 @@ export default function CreateRideWizard() {
   }
 
   return (
-   <View style={{ flex: 1, padding: 16, backgroundColor: theme.colors.background }}>
+    <View style={{ flex: 1, padding: 16, backgroundColor: theme.colors.background }}>
       {/* Header */}
       <Text variant="titleLarge" style={{ color: theme.colors.onBackground }}>
         {stepTitle}
-        </Text>
+      </Text>
 
       <Text style={{ color: theme.colors.onBackground, opacity: 0.7, marginTop: 4 }}>
-        Step {stepIndex + 1} / {steps.length}
+        {t("createRide.stepCounter", { current: stepIndex + 1, total: steps.length })}
       </Text>
       <Divider style={{ marginVertical: 12 }} />
 
@@ -161,7 +150,7 @@ export default function CreateRideWizard() {
 
       <Divider style={{ marginVertical: 12 }} />
 
-      {/* Navigation buttons - FORCE LTR so Back is always left, Next always right */}
+      {/* Navigation buttons */}
       <View style={{ flexDirection: I18nManager.isRTL ? "row-reverse" : "row", gap: 12 }}>
         <Button
           mode="outlined"

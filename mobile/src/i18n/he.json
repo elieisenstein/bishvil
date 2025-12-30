@@ -112,7 +112,7 @@
   "myRides": {
     "organizing": "מארגן",
     "joined": "משתתף",
-    "requested": "ממתין לאישור",
+    "requested": "ממתין",
     "statusLabels": {
       "owner": "מארגן",
       "joined": "משתתף",
@@ -137,6 +137,10 @@
     "reject": "דחה",
     "share": "שתף רכיבה",
     "shareWhatsApp": "שתף ב-WhatsApp",
+    "joinModes": {
+      "express": "הצטרפות מהירה",
+      "approval": "הצטרפות באישור"
+    },
     "actions": {
       "join": "הצטרף",
       "askToJoin": "בקש להצטרף",
@@ -253,21 +257,21 @@
     }
   },
   "rideTypes": {
-    "xc": "XC",
-    "trail": "Trail",
-    "enduro": "Enduro",
-    "gravel": "Gravel",
-    "road": "Road"
+    "XC": "קרוס",
+    "Trail": "שבילים",
+    "Enduro": "אנדורו",
+    "Gravel": "גראבל",
+    "Road": "כביש"
   },
   "skillLevels": {
-    "beginner": "מתחיל",
-    "intermediate": "בינוני",
-    "advanced": "מתקדם"
+    "Beginner": "מתחיל",
+    "Intermediate": "בינוני",
+    "Advanced": "מתקדם"
   },
   "paceOptions": {
-    "slow": "איטי",
-    "moderate": "בינוני",
-    "fast": "מהיר"
+    "Slow": "איטי",
+    "Moderate": "בינוני",
+    "Fast": "מהיר"
   },
   "timeRanges": {
     "today": "היום",
