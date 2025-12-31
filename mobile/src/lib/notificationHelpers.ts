@@ -1,5 +1,7 @@
 // src/lib/notificationHelpers.ts
 import { supabase } from './supabase';
+import heTranslations from '../i18n/he.json';
+import enTranslations from '../i18n/en.json';
 
 type NotificationType = 'ride_update' | 'request' | 'approval' | 'rejection' | 'new_ride';
 
@@ -25,42 +27,46 @@ export async function sendPushNotification(params: SendNotificationParams): Prom
   }
 }
 
-// Helper that gets user's language and sends translated notification
+// Get translations for user's language
+function getTranslations(lang: string) {
+  const allTranslations = lang === 'he' ? heTranslations : enTranslations;
+  return allTranslations.notifications; // Return ONLY the notifications part
+}
+
+// Replace placeholders in string
+function replacePlaceholders(text: string, params: Record<string, string>): string {
+  let result = text;
+  Object.entries(params).forEach(([key, value]) => {
+    result = result.replace(`{{${key}}}`, value);
+  });
+  return result;
+}
+
 async function sendTranslatedNotification(
   userId: string,
-  titleKey: string,
-  bodyKey: string,
-  titleParams: Record<string, string>,
-  bodyParams: Record<string, string>,
+  notificationKey: string,
+  params: Record<string, string>,
   type: NotificationType,
   data?: Record<string, any>
 ): Promise<void> {
-  // Get user's language preference from profile
   const { data: profile } = await supabase
     .from('profiles')
     .select('language')
-    .eq('user_id', userId)
+    .eq('id', userId)
     .single();
 
-  const userLang = profile?.language || 'he'; // Default to Hebrew
+  const userLang = profile?.language || 'he';
+  const translations = getTranslations(userLang);
   
-  // Import translations dynamically based on language
-  const translations = userLang === 'he' 
-    ? await import('../../i18n/he.json')
-    : await import('../../i18n/en.json');
-
-  // Get translated strings and replace params
-  let title = translations.notifications[titleKey]?.title || titleKey;
-  let body = translations.notifications[bodyKey]?.body || bodyKey;
-
-  // Replace {{placeholders}}
-  Object.entries(titleParams).forEach(([key, value]) => {
-    title = title.replace(`{{${key}}}`, value);
-  });
+  const title = replacePlaceholders(
+  translations[notificationKey]?.title || notificationKey,  // Remove .notifications
+  params
+);
   
-  Object.entries(bodyParams).forEach(([key, value]) => {
-    body = body.replace(`{{${key}}}`, value);
-  });
+const body = replacePlaceholders(
+  translations[notificationKey]?.body || notificationKey,  // Remove .notifications
+  params
+);
 
   await sendPushNotification({ userId, title, body, data, type });
 }
@@ -74,8 +80,6 @@ export async function notifyOwnerOfJoinRequest(
   await sendTranslatedNotification(
     ownerId,
     'joinRequest',
-    'joinRequest',
-    { name: requesterName, ride: rideTitle },
     { name: requesterName, ride: rideTitle },
     'request',
     { rideId }
@@ -90,8 +94,6 @@ export async function notifyUserOfApproval(
   await sendTranslatedNotification(
     userId,
     'approved',
-    'approved',
-    { ride: rideTitle },
     { ride: rideTitle },
     'approval',
     { rideId }
@@ -106,8 +108,6 @@ export async function notifyUserOfRejection(
   await sendTranslatedNotification(
     userId,
     'rejected',
-    'rejected',
-    { ride: rideTitle },
     { ride: rideTitle },
     'rejection',
     { rideId }
@@ -124,8 +124,6 @@ export async function notifyParticipantsOfRideUpdate(
     sendTranslatedNotification(
       userId,
       'rideUpdated',
-      'rideUpdated',
-      { ride: rideTitle },
       { ride: rideTitle, change: changeDescription },
       'ride_update',
       { rideId }
@@ -144,8 +142,6 @@ export async function notifyParticipantsOfCancellation(
     sendTranslatedNotification(
       userId,
       'rideCancelled',
-      'rideCancelled',
-      { ride: rideTitle },
       { ride: rideTitle },
       'ride_update',
       { rideId }

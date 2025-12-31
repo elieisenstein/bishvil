@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1091546006792",
+    "project_id": "chavrutrail",
+    "storage_bucket": "chavrutrail.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1091546006792:android:cdb502f34720e2b844d8bd",
+        "android_client_info": {
+          "package_name": "com.elieisenstein.chavrutrail"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKFjlsewFDslV5f-ixP7twmCrvGbvuQOA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

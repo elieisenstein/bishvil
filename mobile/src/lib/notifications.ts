@@ -6,11 +6,11 @@ import Constants from 'expo-constants';
 import { supabase } from './supabase';
 
 // Notification types (matching database)
-export type NotificationType = 
-  | 'ride_update' 
-  | 'request' 
-  | 'approval' 
-  | 'rejection' 
+export type NotificationType =
+  | 'ride_update'
+  | 'request'
+  | 'approval'
+  | 'rejection'
   | 'new_ride';
 
 // Configure notification behavior
@@ -43,22 +43,31 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
   if (Device.isDevice) {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
-    
+
     if (existingStatus !== 'granted') {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
-    
+
     if (finalStatus !== 'granted') {
       console.log('Failed to get push token for push notification!');
       return null;
     }
-    
+
     try {
+      // ✅ NEW (Safer)
+      const projectId =
+        Constants?.expoConfig?.extra?.eas?.projectId ??
+        Constants?.easConfig?.projectId;
+
+      if (!projectId) {
+        console.log("❌ Project ID not found in config. Check app.config.js");
+      }
+
       token = (await Notifications.getExpoPushTokenAsync({
-        projectId: Constants.expoConfig?.extra?.eas?.projectId,
+        projectId,
       })).data;
-      
+
       // Save token to Supabase
       await saveTokenToDatabase(token);
     } catch (error) {
@@ -121,13 +130,13 @@ async function createNotificationChannels() {
 async function saveTokenToDatabase(token: string): Promise<void> {
   const { data: sessionData } = await supabase.auth.getSession();
   const userId = sessionData.session?.user.id;
-  
+
   if (!userId) return;
 
   const { error } = await supabase
     .from('profiles')
     .update({ expo_push_token: token })
-    .eq('user_id', userId);
+    .eq('id', userId);
 
   if (error) {
     console.log('Error saving push token:', error);

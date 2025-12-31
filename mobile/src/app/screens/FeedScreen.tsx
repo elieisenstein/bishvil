@@ -136,7 +136,7 @@ export default function FeedScreen() {
           borderRadius: 8,
         }}>
           <Text style={{ flex: 1, color: theme.colors.onSurfaceVariant, fontSize: 12 }}>
-            {t("feed.filters")}: {getFilterSummary()}
+            {`${t("feed.filters")}: ${getFilterSummary()}`}
           </Text>
           <Button 
             mode="contained" 

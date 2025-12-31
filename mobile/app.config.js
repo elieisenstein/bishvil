@@ -23,6 +23,11 @@ export default {
 
   android: {
     package: "com.elieisenstein.chavrutrail",
+    googleServicesFile: "./google-services.json", // This tells Expo where to find your file
+    permissions: [
+      "NOTIFICATIONS",
+      "POST_NOTIFICATIONS" // This is required for Android 13+
+    ],
     adaptiveIcon: {
       foregroundImage: "./assets/logo.png",
       backgroundColor: "#000000",
@@ -62,6 +67,7 @@ export default {
   },
 
   plugins: [
+    "expo-notifications", // 👈 ADD THIS: This initializes Firebase on Android start
     "@react-native-community/datetimepicker",
     "expo-localization",
     [

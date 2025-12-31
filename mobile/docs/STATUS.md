@@ -250,3 +250,5 @@ D. Social Features:
 Comments on rides
 Ride chat
 User ratings/reviews
+
+Note : cannot run build using expo go - it's not supporting mapbox!!!

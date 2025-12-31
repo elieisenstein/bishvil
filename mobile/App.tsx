@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import { PaperProvider } from "react-native-paper";
+import { PaperProvider, Text, ActivityIndicator } from "react-native-paper";
 import { getLocales } from 'expo-localization';
-import { ActivityIndicator, View } from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
 import MapboxGL from '@rnmapbox/maps';
 import { Session } from '@supabase/supabase-js';
 
@@ -11,14 +11,55 @@ import { AppSettingsProvider, useAppSettings } from "./src/app/state/AppSettings
 import { supabase } from "./src/lib/supabase";
 import AuthScreen from "./src/app/auth/AuthScreen";
 import AppNavigator from "./src/app/navigation/AppNavigator";
-import { linking } from "./src/app/navigation/linking"; // ← NEW
+import { linking } from "./src/app/navigation/linking";
 import { useNotifications } from './src/hooks/useNotifications';
 
-// Initialize Mapbox with your access token
+// Initialize Mapbox
 MapboxGL.setAccessToken("pk.eyJ1IjoiZWxpZWlzZW5zdGVpbiIsImEiOiJjbWpwc21iOXEzaHZzM2Nxemhzb2VtNHA3In0.NCwfmHYdr7JE0vvKRL9pFw");
 MapboxGL.setTelemetryEnabled(false);
 
+/**
+ * Error Boundary to catch "Text strings must be rendered within a <Text> component"
+ * and other render-time crashes.
+ */
+type ErrorProps = { children: React.ReactNode };
+type ErrorState = { hasError: boolean; error: Error | null };
 
+class ErrorBoundary extends React.Component<ErrorProps, ErrorState> {
+  state: ErrorState = { hasError: false, error: null };
+
+  static getDerivedStateFromError(error: Error): ErrorState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("🔥 CRITICAL RENDER ERROR:", error?.message ?? String(error));
+    console.error("🔥 COMPONENT STACK:", errorInfo?.componentStack ?? "(no componentStack)");
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorTitle}>Something went wrong</Text>
+          <ScrollView style={styles.errorBox} contentContainerStyle={styles.errorBoxContent}>
+            <Text style={styles.errorText}>
+              {this.state.error ? this.state.error.toString() : "Unknown error"}
+            </Text>
+          </ScrollView>
+          <Text style={styles.errorHint}>
+            Check Logcat / Metro console for "🔥 COMPONENT STACK" to find the bad code.
+          </Text>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+/**
+ * Inner logic of the App (Requires AppSettingsProvider context)
+ */
 function InnerApp() {
   const { resolvedTheme } = useAppSettings();
   const [i18nReady, setI18nReady] = useState(false);
@@ -26,15 +67,13 @@ function InnerApp() {
   const [authLoading, setAuthLoading] = useState(true);
 
   // Initialize notifications
-  useNotifications();  
+  useNotifications();
 
   // Initialize i18n
   useEffect(() => {
     (async () => {
-      // Detect device language: if Hebrew, use "he", otherwise "en"
       const deviceLocale = getLocales()[0]?.languageCode || 'en';
       const deviceLanguage = deviceLocale === 'he' ? 'he' : 'en';
-      
       await initI18n(deviceLanguage);
       setI18nReady(true);
     })();
@@ -42,13 +81,11 @@ function InnerApp() {
 
   // Handle auth state
   useEffect(() => {
-    // Check current session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setAuthLoading(false);
     });
 
-    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log('Auth state changed:', _event, session?.user?.email);
       setSession(session);
@@ -57,10 +94,9 @@ function InnerApp() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Show loading spinner while initializing
   if (!i18nReady || authLoading) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" />
       </View>
     );
@@ -68,21 +104,63 @@ function InnerApp() {
 
   return (
     <PaperProvider theme={resolvedTheme}>
-      <NavigationContainer linking={linking}> {/* ← MODIFIED: Added linking prop */}
-        {session ? (
-          <AppNavigator />
-        ) : (
-          <AuthScreen />
-        )}
+      <NavigationContainer linking={linking}>
+        {session ? <AppNavigator /> : <AuthScreen />}
       </NavigationContainer>
     </PaperProvider>
   );
 }
 
+/**
+ * Root Entry Point
+ */
 export default function App() {
   return (
-    <AppSettingsProvider>
-      <InnerApp />
-    </AppSettingsProvider>
+    <ErrorBoundary>
+      <AppSettingsProvider>
+        <InnerApp />
+      </AppSettingsProvider>
+    </ErrorBoundary>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff'
+  },
+  errorContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+    padding: 24,
+    justifyContent: "center",
+  },
+  errorTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#d32f2f",
+    marginBottom: 16,
+    textAlign: 'center'
+  },
+  errorBox: {
+    maxHeight: 220,
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+  },
+  errorBoxContent: {
+    padding: 12,
+  },
+  errorText: {
+    fontFamily: "monospace",
+    fontSize: 12,
+    color: "#333",
+  },
+  errorHint: {
+    marginTop: 12,
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+  },
+});

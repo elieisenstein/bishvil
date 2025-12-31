@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
       .select('expo_push_token, notification_preferences')
-      .eq('user_id', userId)
+      .eq('id', userId)
       .single()
 
     if (profileError || !profile?.expo_push_token) {

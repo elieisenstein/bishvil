@@ -2,14 +2,12 @@
 import { useEffect, useRef, useState } from 'react';
 import * as Notifications from 'expo-notifications';
 import { registerForPushNotificationsAsync } from '../lib/notifications';
-import { useNavigation } from '@react-navigation/native';
 
 export function useNotifications() {
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [notification, setNotification] = useState<Notifications.Notification | null>(null);
   const notificationListener = useRef<any>(null);
   const responseListener = useRef<any>(null);
-  const navigation = useNavigation<any>();
 
   useEffect(() => {
     // Register for push notifications
@@ -24,11 +22,10 @@ export function useNotifications() {
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
       const data = response.notification.request.content.data;
       
-      // Handle navigation based on notification data
+      // Handle navigation using Linking API instead of navigation hook
       if (data?.rideId) {
-        navigation.navigate('FeedStack', {
-          screen: 'RideDetails',
-          params: { rideId: data.rideId },
+        import('expo-linking').then(({ default: Linking }) => {
+          Linking.openURL(`chavrutrail://ride/${data.rideId}`);
         });
       }
     });

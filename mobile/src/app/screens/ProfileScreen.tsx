@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { Text, Button, TextInput, Chip, useTheme, Divider } from "react-native-paper";
 import { supabase } from "../../lib/supabase";
-import { 
-  fetchMyProfile, 
-  updateMyProfile, 
+import {
+  fetchMyProfile,
+  updateMyProfile,
   Profile,
   rideTypesToString,
   stringToRideTypes
@@ -22,7 +22,7 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
   const [err, setErr] = useState<string | null>(null);
-  
+
   // Form state
   const [displayName, setDisplayName] = useState<string>("");
   const [bio, setBio] = useState<string>("");
@@ -31,7 +31,7 @@ export default function ProfileScreen() {
   const [selectedPace, setSelectedPace] = useState<string | null>(null);
   const [birthYear, setBirthYear] = useState<string>("");
   const [selectedGender, setSelectedGender] = useState<string | null>(null);
-  
+
   const nav = useNavigation<any>();
   const theme = useTheme();
 
@@ -40,7 +40,7 @@ export default function ProfileScreen() {
     setLoading(true);
     try {
       const p = await fetchMyProfile();
-      
+
       if (!p) {
         setProfile(null);
         setDisplayName("");
@@ -52,7 +52,7 @@ export default function ProfileScreen() {
         setSelectedGender(null);
         return;
       }
-      
+
       setProfile(p);
       setDisplayName(p.display_name ?? "");
       setBio(p.bio ?? "");
@@ -85,7 +85,7 @@ export default function ProfileScreen() {
         birth_year: birthYear ? parseInt(birthYear, 10) : null,
         gender: selectedGender,
       };
-      
+
       await updateMyProfile(updates as any);
       await loadProfile();
     } catch (e: any) {
@@ -116,15 +116,15 @@ export default function ProfileScreen() {
       style={{ flex: 1, backgroundColor: theme.colors.background }}
       contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
     >
-      {err ? (
+      {!!err ? (
         <Text style={{ color: theme.colors.error, marginBottom: 12 }}>
           {err}
         </Text>
       ) : null}
 
       {/* Settings Button */}
-      <Button 
-        mode="outlined" 
+      <Button
+        mode="outlined"
         onPress={() => nav.navigate("Settings")}
         style={{ marginBottom: 16 }}
       >
@@ -176,15 +176,15 @@ export default function ProfileScreen() {
             mode={selectedRideTypes.includes(type) ? "flat" : "outlined"}
             showSelectedCheck={false}
             style={{
-              backgroundColor: selectedRideTypes.includes(type) 
+              backgroundColor: selectedRideTypes.includes(type)
                 ? (type === "Road" ? "#2196F3" : theme.colors.primary)
                 : 'transparent',
-              borderColor: type === "Road" && !selectedRideTypes.includes(type) 
-                ? "#2196F3" 
+              borderColor: type === "Road" && !selectedRideTypes.includes(type)
+                ? "#2196F3"
                 : undefined
             }}
             textStyle={{
-              color: selectedRideTypes.includes(type) 
+              color: selectedRideTypes.includes(type)
                 ? (type === "Road" ? "#FFFFFF" : theme.colors.onPrimary)
                 : (type === "Road" ? "#2196F3" : theme.colors.onSurface)
             }}
@@ -209,13 +209,13 @@ export default function ProfileScreen() {
             mode={selectedSkill === level ? "flat" : "outlined"}
             showSelectedCheck={false}
             style={{
-              backgroundColor: selectedSkill === level 
-                ? theme.colors.primary 
+              backgroundColor: selectedSkill === level
+                ? theme.colors.primary
                 : 'transparent'
             }}
             textStyle={{
-              color: selectedSkill === level 
-                ? theme.colors.onPrimary 
+              color: selectedSkill === level
+                ? theme.colors.onPrimary
                 : theme.colors.onSurface
             }}
           >
@@ -239,13 +239,13 @@ export default function ProfileScreen() {
             mode={selectedPace === pace ? "flat" : "outlined"}
             showSelectedCheck={false}
             style={{
-              backgroundColor: selectedPace === pace 
-                ? theme.colors.primary 
+              backgroundColor: selectedPace === pace
+                ? theme.colors.primary
                 : 'transparent'
             }}
             textStyle={{
-              color: selectedPace === pace 
-                ? theme.colors.onPrimary 
+              color: selectedPace === pace
+                ? theme.colors.onPrimary
                 : theme.colors.onSurface
             }}
           >
@@ -282,13 +282,13 @@ export default function ProfileScreen() {
           mode={selectedGender === "Male" ? "flat" : "outlined"}
           showSelectedCheck={false}
           style={{
-            backgroundColor: selectedGender === "Male" 
-              ? theme.colors.primary 
+            backgroundColor: selectedGender === "Male"
+              ? theme.colors.primary
               : 'transparent'
           }}
           textStyle={{
-            color: selectedGender === "Male" 
-              ? theme.colors.onPrimary 
+            color: selectedGender === "Male"
+              ? theme.colors.onPrimary
               : theme.colors.onSurface
           }}
         >
@@ -300,13 +300,13 @@ export default function ProfileScreen() {
           mode={selectedGender === "Female" ? "flat" : "outlined"}
           showSelectedCheck={false}
           style={{
-            backgroundColor: selectedGender === "Female" 
-              ? theme.colors.primary 
+            backgroundColor: selectedGender === "Female"
+              ? theme.colors.primary
               : 'transparent'
           }}
           textStyle={{
-            color: selectedGender === "Female" 
-              ? theme.colors.onPrimary 
+            color: selectedGender === "Female"
+              ? theme.colors.onPrimary
               : theme.colors.onSurface
           }}
         >
@@ -318,13 +318,13 @@ export default function ProfileScreen() {
           mode={selectedGender === null ? "flat" : "outlined"}
           showSelectedCheck={false}
           style={{
-            backgroundColor: selectedGender === null 
-              ? theme.colors.primary 
+            backgroundColor: selectedGender === null
+              ? theme.colors.primary
               : 'transparent'
           }}
           textStyle={{
-            color: selectedGender === null 
-              ? theme.colors.onPrimary 
+            color: selectedGender === null
+              ? theme.colors.onPrimary
               : theme.colors.onSurface
           }}
         >
@@ -335,10 +335,10 @@ export default function ProfileScreen() {
       <Divider style={{ marginBottom: 16 }} />
 
       {/* Save Button */}
-      <Button 
-        mode="contained" 
-        onPress={saveProfile} 
-        loading={saving} 
+      <Button
+        mode="contained"
+        onPress={saveProfile}
+        loading={saving}
         disabled={saving || !displayName.trim()}
         style={{ marginBottom: 12 }}
       >
