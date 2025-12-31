@@ -270,11 +270,33 @@
   },
   "paceOptions": {
     "Slow": "איטי",
-    "Moderate": "בינוני",
+    "Moderate": "מתון",
     "Fast": "מהיר"
   },
   "timeRanges": {
     "today": "היום",
     "days": "{{count}} ימים"
+  },
+  "notifications": {
+    "joinRequest": {
+      "title": "בקשת הצטרפות חדשה",
+      "body": "{{name}} ביקש להצטרף ל-{{ride}}"
+    },
+    "approved": {
+      "title": "אושרת לרכיבה! 🎉",
+      "body": "אושרת להצטרף ל-{{ride}}"
+    },
+    "rejected": {
+      "title": "בקשה נדחתה",
+      "body": "הבקשה להצטרף ל-{{ride}} נדחתה"
+    },
+    "rideUpdated": {
+      "title": "עדכון ברכיבה: {{ride}}",
+      "body": "{{change}}"
+    },
+    "rideCancelled": {
+      "title": "🚫 רכיבה בוטלה",
+      "body": "הרכיבה \"{{ride}}\" בוטלה על ידי המארגן"
+    }
   }
 }

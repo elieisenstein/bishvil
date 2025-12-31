@@ -1,5 +1,11 @@
 // src/lib/rides.ts
 import { supabase } from "./supabase";
+import {
+  notifyOwnerOfJoinRequest,
+  notifyUserOfApproval,
+  notifyUserOfRejection,
+  notifyParticipantsOfCancellation,
+} from './notificationHelpers';
 
 export type RideStatus = "draft" | "published" | "cancelled" | "completed";
 export type JoinMode = "express" | "approval";
@@ -187,6 +193,20 @@ export async function joinOrRequestRide(rideId: string, joinMode: JoinMode): Pro
     );
 
   if (error) throw new Error(error.message);
+
+  // Send notification to owner if approval required
+  if (joinMode === "approval") {
+    // Get ride details and user profile
+    const [{ data: ride }, { data: profile }] = await Promise.all([
+      supabase.from("rides").select("owner_id, ride_type, skill_level").eq("id", rideId).single(),
+      supabase.from("profiles").select("display_name").eq("user_id", userId).single(),
+    ]);
+
+    if (ride && profile) {
+      const rideTitle = `${ride.ride_type} · ${ride.skill_level}`;
+      await notifyOwnerOfJoinRequest(ride.owner_id, profile.display_name || "משתמש", rideId, rideTitle);
+    }
+  }
 }
 
 export async function leaveRide(rideId: string): Promise<void> {
@@ -273,8 +293,19 @@ export async function approveJoinRequest(rideId: string, userId: string): Promis
     .eq("status", "requested");
 
   if (error) throw new Error(error.message);
-}
 
+  // Notify user of approval
+  const { data: ride } = await supabase
+    .from("rides")
+    .select("ride_type, skill_level")
+    .eq("id", rideId)
+    .single();
+
+  if (ride) {
+    const rideTitle = `${ride.ride_type} · ${ride.skill_level}`;
+    await notifyUserOfApproval(userId, rideTitle, rideId);
+  }
+}
 /**
  * Reject a join request (owner only)
  * Changes status from 'requested' to 'rejected'
@@ -288,8 +319,19 @@ export async function rejectJoinRequest(rideId: string, userId: string): Promise
     .eq("status", "requested");
 
   if (error) throw new Error(error.message);
-}
 
+  // Notify user of rejection
+  const { data: ride } = await supabase
+    .from("rides")
+    .select("ride_type, skill_level")
+    .eq("id", rideId)
+    .single();
+
+  if (ride) {
+    const rideTitle = `${ride.ride_type} · ${ride.skill_level}`;
+    await notifyUserOfRejection(userId, rideTitle, rideId);
+  }
+}
 /**
  * Cancel a ride (owner only)
  * Changes ride status to 'cancelled' - ride won't appear in feed anymore
@@ -303,9 +345,29 @@ export async function cancelRide(rideId: string): Promise<void> {
     .from("rides")
     .update({ status: "cancelled" })
     .eq("id", rideId)
-    .eq("owner_id", userId); // Only owner can cancel
+    .eq("owner_id", userId);
 
   if (error) throw new Error(error.message);
+
+  // Notify all joined participants
+  const { data: ride } = await supabase
+    .from("rides")
+    .select("ride_type, skill_level")
+    .eq("id", rideId)
+    .single();
+
+  const { data: participants } = await supabase
+    .from("ride_participants")
+    .select("user_id")
+    .eq("ride_id", rideId)
+    .eq("status", "joined")
+    .neq("user_id", userId); // Don't notify the owner
+
+  if (ride && participants && participants.length > 0) {
+    const rideTitle = `${ride.ride_type} · ${ride.skill_level}`;
+    const participantIds = participants.map(p => p.user_id);
+    await notifyParticipantsOfCancellation(participantIds, rideTitle, rideId);
+  }
 }
 
 /**

@@ -12,16 +12,21 @@ import { supabase } from "./src/lib/supabase";
 import AuthScreen from "./src/app/auth/AuthScreen";
 import AppNavigator from "./src/app/navigation/AppNavigator";
 import { linking } from "./src/app/navigation/linking"; // ← NEW
+import { useNotifications } from './src/hooks/useNotifications';
 
 // Initialize Mapbox with your access token
 MapboxGL.setAccessToken("pk.eyJ1IjoiZWxpZWlzZW5zdGVpbiIsImEiOiJjbWpwc21iOXEzaHZzM2Nxemhzb2VtNHA3In0.NCwfmHYdr7JE0vvKRL9pFw");
 MapboxGL.setTelemetryEnabled(false);
+
 
 function InnerApp() {
   const { resolvedTheme } = useAppSettings();
   const [i18nReady, setI18nReady] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+
+  // Initialize notifications
+  useNotifications();  
 
   // Initialize i18n
   useEffect(() => {

@@ -276,5 +276,27 @@
   "timeRanges": {
     "today": "Today",
     "days": "{{count}}d"
+  },
+  "notifications": {
+    "joinRequest": {
+      "title": "New Join Request",
+      "body": "{{name}} requested to join {{ride}}"
+    },
+    "approved": {
+      "title": "Approved! 🎉",
+      "body": "You've been approved for {{ride}}"
+    },
+    "rejected": {
+      "title": "Request Denied",
+      "body": "Your request to join {{ride}} was declined"
+    },
+    "rideUpdated": {
+      "title": "Ride Updated: {{ride}}",
+      "body": "{{change}}"
+    },
+    "rideCancelled": {
+      "title": "🚫 Ride Cancelled",
+      "body": "The ride \"{{ride}}\" has been cancelled by the organizer"
+    }
   }
 }
