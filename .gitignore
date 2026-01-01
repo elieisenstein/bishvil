@@ -1,3 +1,4 @@
+mobile/node_modules/
 mobile/.env
 *.db
 .vscode/
