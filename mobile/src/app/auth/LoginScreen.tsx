@@ -64,7 +64,7 @@ export default function LoginScreen({ onForgotPassword }: Props) {
       >
         <View style={styles.form}>
           <Text variant="headlineMedium" style={styles.title}>
-            {t("auth.welcomeBack") ?? "Welcome to Chavrutrail"}
+            {t("auth.welcomeBack") ?? "Welcome to Bishvil"}
           </Text>
           
           <Text variant="bodyMedium" style={styles.subtitle}>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chavrutrail - חברות לשביל</title>
+    <title>Bishvil - בשביל לפגוש אנשים בשביל</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -78,7 +78,7 @@
 <body>
     <div class="container">
         <div class="logo">🚴‍♂️</div>
-        <h1>Chavrutrail</h1>
+        <h1>Bishvil</h1>
         <p>אפליקציית שיתוף רכיבות לרוכבי אופני הרים וגראבל בישראל</p>
         
         <a href="#" id="openApp" class="btn">פתח רכיבה באפליקציה</a>
@@ -105,7 +105,7 @@
         </div>
 
         <div class="footer">
-            Chavrutrail © 2025 | Made for Israeli Cyclists
+            Bishvil © 2025 | Made for Israeli Cyclists
         </div>
     </div>
 
@@ -115,8 +115,8 @@
         document.getElementById('openApp').addEventListener('click', function(e) {
             e.preventDefault();
             const link = rideId && rideId !== '' && rideId !== 'index.html'
-                ? 'chavrutrail://ride/' + rideId
-                : 'chavrutrail://feed';
+                ? 'bishvil://ride/' + rideId
+                : 'bishvil://feed';
             window.location.href = link;
         });
     </script>

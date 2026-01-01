@@ -47,7 +47,7 @@ export default {
           },
           {
             scheme: "https",
-            host: "shvil.app",
+            host: "bishvil-app.vercel.app",
             pathPrefix: "/ride",
           },
         ],

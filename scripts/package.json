@@ -1,7 +1,7 @@
 {
-  "name": "chavrutrail-admin",
+  "name": "bishvil-admin",
   "version": "1.0.0",
-  "description": "Admin scripts for Chavrutrail",
+  "description": "Admin scripts for Bishvil",
   "main": "createUsers.js",
   "scripts": {
     "create-users": "node createUsers.js"

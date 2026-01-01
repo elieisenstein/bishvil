@@ -1,4 +1,4 @@
-# Chavrutrail – Decisions Log
+# Bishvil – Decisions Log
 
 ## Stack
 - React Native + Expo chosen over Flutter

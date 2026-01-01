@@ -20,13 +20,13 @@ const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
 // Add your beta users here
 const users = [
   { 
-    email: 'yehonathan@chavrutrail.com', 
+    email: 'yehonathan@bishvil.com', 
     password: 'yehonathan123', 
     name: 'Yehonathan',
     phone: '+972501234567'
   },
   { 
-    email: 'eli@chavrutrail.com', 
+    email: 'eli@bishvil.com', 
     password: 'eli123', 
     name: 'Eli',
     phone: '+972507654321'

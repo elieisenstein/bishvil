@@ -27,7 +27,7 @@ export default function ForgotPasswordScreen({ onBack }: Props) {
       const { error } = await supabase.auth.resetPasswordForEmail(
         email.trim().toLowerCase(),
         {
-          redirectTo: 'chavrutrail://reset-password', // Deep link for your app
+          redirectTo: 'bishvil://reset-password', // Deep link for your app
         }
       );
 

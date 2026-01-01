@@ -4,14 +4,14 @@
  * Generate a web link for sharing (opens landing page if app not installed)
  */
 export function generateRideShareLink(rideId: string): string {
-  return `https://chavrutrail.vercel.app/ride/${rideId}`;
+  return `https://bishvil-app.vercel.app/ride/${rideId}`;
 }
 
 /**
  * Generate an app deep link (opens directly in app)
  */
 export function generateRideAppLink(rideId: string): string {
-  return `chavrutrail://ride/${rideId}`;
+  return `bishvil://ride/${rideId}`;
 }
 
 /**
