@@ -3,3 +3,4 @@ mobile/.env
 *.db
 .vscode/
 node_modules/
+scripts/createUsers.js
