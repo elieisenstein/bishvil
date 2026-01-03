@@ -1,4 +1,5 @@
 // supabase/functions/send-notification/index.ts
+// run in mobile folder to deploy on supabase "npx supabase functions deploy send-notification --no-verify-jwt"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const EXPO_ACCESS_TOKEN = Deno.env.get('EXPO_ACCESS_TOKEN')
@@ -8,21 +9,20 @@ interface NotificationRequest {
   title: string;
   body: string;
   data?: Record<string, any>;
-  type: 'ride_update' | 'request' | 'approval' | 'rejection' | 'new_ride';
+  // Expanded to match the process-ride-event logic
+  type: string; 
 }
 
 Deno.serve(async (req) => {
   try {
-    // Parse request
     const { userId, title, body, data, type }: NotificationRequest = await req.json()
+    console.log(`Processing notification for ${userId}, Type: ${type}`);
 
-    // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Get user's push token and preferences
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
       .select('expo_push_token, notification_preferences')
@@ -30,40 +30,34 @@ Deno.serve(async (req) => {
       .single()
 
     if (profileError || !profile?.expo_push_token) {
-      return new Response(
-        JSON.stringify({ error: 'No push token found for user' }),
-        { status: 404 }
-      )
+      console.error(`Token Error: ${profileError?.message || 'No token found'}`);
+      return new Response(JSON.stringify({ error: 'No token found' }), { status: 404 })
     }
 
-    // Check if user has this notification type enabled
+    // --- IMPROVED TYPE MAPPING ---
+    // Matches the keys in your profiles schema: requests_approvals, ride_updates, new_rides
+    const typeKey = 
+      (type === 'request' || type === 'approval' || type === 'decision' || type === 'status_update') 
+      ? 'requests_approvals' 
+      : (type === 'new_ride') 
+      ? 'new_rides' 
+      : 'ride_updates'; // Default for ride_cancelled or others
+
     const prefs = profile.notification_preferences || {}
-    const typeKey = type === 'ride_update' ? 'ride_updates' 
-                  : type === 'request' || type === 'approval' || type === 'rejection' ? 'requests_approvals'
-                  : type === 'new_ride' ? 'new_rides'
-                  : 'ride_updates'
-
+    
+    // Safety check: if pref is missing, we assume 'true' to be safe
     if (prefs[typeKey] === false) {
-      return new Response(
-        JSON.stringify({ message: 'User has disabled this notification type' }),
-        { status: 200 }
-      )
+      console.log(`Notification suppressed: User ${userId} has ${typeKey} disabled.`);
+      return new Response(JSON.stringify({ message: 'User disabled this type' }), { status: 200 })
     }
 
-    // Get channel based on type
-    const channelId = type === 'ride_update' ? 'ride_updates'
-                    : type === 'request' || type === 'approval' || type === 'rejection' ? 'requests_approvals'
-                    : type === 'new_ride' ? 'new_rides'
-                    : 'default'
-
-    // Send push notification via Expo
     const message = {
       to: profile.expo_push_token,
       sound: 'default',
       title,
       body,
       data: data || {},
-      channelId, // Android channel
+      channelId: typeKey, // Uses the same mapping for Android channels
     }
 
     const response = await fetch('https://exp.host/--/api/v2/push/send', {
@@ -77,8 +71,9 @@ Deno.serve(async (req) => {
     })
 
     const result = await response.json()
+    console.log("EXPO API RESPONSE:", JSON.stringify(result));
 
-    // Save notification to database
+    // Save to history
     await supabaseClient
       .from('notifications')
       .insert({
@@ -90,15 +85,10 @@ Deno.serve(async (req) => {
         read: false,
       })
 
-    return new Response(
-      JSON.stringify({ success: true, result }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    )
+    return new Response(JSON.stringify({ success: true, result }), { status: 200 })
 
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500 }
-    )
+    console.error("Critical Send Error:", error.message);
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 })
   }
 })

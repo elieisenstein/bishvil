@@ -1,86 +1,147 @@
+// run in mobile folder to deploy on supabase "npx supabase functions deploy process-ride-event"
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 serve(async (req) => {
-  const payload = await req.json()
-  const { record, old_record, type, table } = payload
+  const timestamp = new Date().toISOString();
+  console.log(`--- [START] Function Triggered at ${timestamp} ---`);
 
-  // We use the system-provided keys that are ALREADY there
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-  )
+  try {
+    const payload = await req.json();
+    const { type, table, record, old_record } = payload;
+    console.log(`Event Type: ${type} | Table: ${table}`);
 
-  const functionUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-notification`
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+  const functionUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-notification`;
+
+  // Adding Content-Type explicitly helps avoid 401/400 errors
   const authHeader = { 
-    'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
-    'Content-Type': 'application/json' 
-  }
+    'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+    'Content-Type': 'application/json'
+  };
 
-  // 1. PARTICIPANT LOGIC (Joins & Approvals)
-  if (table === 'ride_participants') {
-    if (type === 'INSERT') {
-      const { data: ride } = await supabase.from('rides').select('title, user_id').eq('id', record.ride_id).single()
-      const { data: joiner } = await supabase.from('profiles').select('full_name').eq('id', record.user_id).single()
+    if (table === 'ride_participants') {
+      const isNewJoin = (type === 'INSERT');
+      const isRejoin = (type === 'UPDATE' && old_record?.status === 'left' && record?.status === 'joined');
+      const isLeft = (type === 'UPDATE' && old_record?.status === 'joined' && record?.status === 'left');
+      
+      if (isNewJoin || isRejoin || isLeft) {
+        console.log(`Step 1: Fetching ride ${record.ride_id}...`);
+        
+        // FIX: Using ride_type and start_name instead of title
+        const { data: ride, error: rErr } = await supabase
+          .from('rides')
+          .select('id, start_name, ride_type, owner_id, join_mode') 
+          .eq('id', record.ride_id)
+          .single();
+        
+        if (rErr || !ride) {
+          console.error("Ride lookup failed:", rErr);
+          return new Response("Ride not found", { status: 404 });
+        }
 
-      await fetch(functionUrl, {
-        method: 'POST',
-        headers: authHeader,
-        body: JSON.stringify({
-          userId: ride.user_id,
-          type: 'request',
-          title: 'New Rider Request',
-          body: `${joiner.full_name} wants to join ${ride.title}`,
-          data: { rideId: record.ride_id }
-        })
-      })
-    }
+        if (ride.owner_id === record.user_id) {
+          console.log("Action by Owner: Skipping notification.");
+          return new Response("Owner action - skipping", { status: 200 });
+        }
 
-    if (type === 'UPDATE' && old_record.status === 'pending' && record.status === 'approved') {
-      const { data: ride } = await supabase.from('rides').select('title').eq('id', record.ride_id).single()
+        console.log(`Step 2: Fetching profile ${record.user_id}...`);
+        const { data: profile, error: pErr } = await supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('id', record.user_id)
+          .single();
 
-      await fetch(functionUrl, {
-        method: 'POST',
-        headers: authHeader,
-        body: JSON.stringify({
-          userId: record.user_id,
-          type: 'approval',
-          title: 'Ride Approved!',
-          body: `You have been approved for: ${ride.title}`,
-          data: { rideId: record.ride_id }
-        })
-      })
-    }
-  }
+        if (ride && profile) {
+          const name = profile.display_name || 'A rider';
+          const rideLabel = ride.start_name || ride.ride_type || 'Ride'; // Human-friendly label
+          
+          let title = '';
+          let body = '';
 
-  // 2. RIDE LOGIC (Cancellations & Updates)
-  if (table === 'rides' && type === 'UPDATE') {
-    const isCanceled = record.status === 'canceled' && old_record.status !== 'canceled'
-    
-    if (isCanceled) {
-      const { data: participants } = await supabase
-        .from('ride_participants')
-        .select('user_id')
-        .eq('ride_id', record.id)
-        .eq('status', 'approved')
+          if (isLeft) {
+            title = 'Rider Left';
+            body = `${name} has left your ride: ${rideLabel}`;
+          } else if (ride.join_mode === 'express') {
+            title = isRejoin ? 'Rider Returned' : 'New Rider Joined';
+            body = `${name} ${isRejoin ? 'is back for' : 'has joined'} the ${ride.ride_type} ride at ${ride.start_name || 'start'}`;
+          } else {
+            title = 'Join Request';
+            body = `${name} wants to join your ${ride.ride_type} ride`;
+          }
 
-      if (participants?.length) {
-        await Promise.all(participants.map(p => 
-          fetch(functionUrl, {
+          console.log(`Step 3: Sending to owner ${ride.owner_id}...`);
+          const notifyRes = await fetch(functionUrl, {
             method: 'POST',
             headers: authHeader,
-            body: JSON.stringify({
-              userId: p.user_id,
-              type: 'ride_update',
-              title: 'Ride Canceled 🚫',
-              body: `The ride "${record.title}" has been canceled.`,
-              data: { rideId: record.id }
+            body: JSON.stringify({ 
+              userId: ride.owner_id, 
+              type: 'status_update', 
+              title, 
+              body, 
+              data: { rideId: ride.id } 
             })
-          })
-        ))
+          });
+          
+          console.log(`Step 4: Notification service responded: ${notifyRes.status}`);
+        }
+      }
+      
+      // Handle Approval/Rejection
+      const isApproved = (type === 'UPDATE' && old_record?.status === 'pending' && record?.status === 'joined');
+      const isRejected = (type === 'UPDATE' && old_record?.status === 'pending' && record?.status === 'rejected');
+
+      if (isApproved || isRejected) {
+        const { data: ride } = await supabase.from('rides').select('id, start_name, ride_type').eq('id', record.ride_id).single();
+        if (ride) {
+          const rideLabel = ride.start_name || ride.ride_type || 'Ride';
+          console.log(`Notifying Rider of Decision...`);
+          await fetch(functionUrl, {
+            method: 'POST',
+            headers: authHeader,
+            body: JSON.stringify({ 
+              userId: record.user_id, 
+              type: 'decision', 
+              title: isApproved ? 'Ride Approved!' : 'Request Update', 
+              body: isApproved ? `You're in for the ride at ${rideLabel}` : `Request for ${rideLabel} was not accepted.`, 
+              data: { rideId: ride.id } 
+            })
+          });
+        }
       }
     }
-  }
 
-  return new Response(JSON.stringify({ success: true }), { status: 200 })
+    // CASE 2: Ride Cancellation
+    if (table === 'rides' && type === 'UPDATE') {
+      if (old_record?.status !== 'cancelled' && record?.status === 'cancelled') {
+        const { data: participants } = await supabase.from('ride_participants').select('user_id').eq('ride_id', record.id).neq('user_id', record.owner_id);
+        if (participants) {
+          for (const p of participants) {
+            await fetch(functionUrl, {
+              method: 'POST',
+              headers: authHeader,
+              body: JSON.stringify({
+                userId: p.user_id,
+                type: 'ride_update',
+                title: 'Ride Cancelled',
+                body: `The ride at ${record.start_name || 'your location'} has been cancelled.`,
+                data: { rideId: record.id }
+              })
+            });
+          }
+        }
+      }
+    }
+
+    console.log("--- [FINISH] Logic completed successfully ---");
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+
+  } catch (error) {
+    console.error("CRITICAL ERROR:", error.message);
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  }
 })

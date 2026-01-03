@@ -199,3 +199,30 @@ Bishvil is an **Android‑first mobile app** for organizing and joining cycling 
 ---
 
 *End of reshaped documentation*
+
+🏆 Notification System Milestone Summary
+We have successfully implemented a self-healing, event-driven push notification system that connects Supabase database events to physical mobile devices via Expo.
+
+1. Backend & Infrastructure
+Trigger-Based Logic: Configured a Supabase Database Webhook that monitors the ride_participants table and automatically triggers a process-ride-event Edge Function whenever a user joins or leaves a ride.
+
+Internal Service Communication: Resolved 401 Unauthorized errors by disabling JWT verification for the send-notification function, allowing secure internal calls using the SERVICE_ROLE_KEY.
+
+Expo API Integration: Authenticated the Edge Function with the Expo Push Service using a dedicated EXPO_ACCESS_TOKEN, confirmed by receiving {"status": "ok"} responses from the Expo API.
+
+2. Mobile App Reliability
+Self-Healing Token Sync: Updated App.tsx and notifications.ts to automatically refresh and sync the expo_push_token to the Supabase profiles table every time the app initializes.
+
+Robust Auth Handling: Improved the token update logic to use supabase.auth.getUser() instead of getSession(), ensuring the push token is correctly mapped to the user ID even during "cold starts" or after app reinstalls.
+
+Release-Ready Builds: Successfully deployed and verified the logic using a Release APK (--variant release), ensuring the notification system persists on the device without a development server connection.
+
+3. User Experience & Branding
+Custom Notification Channels: Implemented distinct Android Notification Channels (e.g., "Requests & Approvals", "Ride Updates") with specific importance levels and behavior, replacing the generic "Miscellaneous" system group.
+
+Localization Support: Integrated a translation helper (notificationHelpers.ts) that fetches the recipient's preferred language from their profile to deliver notifications in Hebrew or English.
+
+📝 Current Status: STABLE
+Verified Flow: User Joins/Leaves → DB Trigger → Edge Function → Expo API → Mobile Device (Verified with logs and physical device).
+
+Next Objective: Address UI state refreshing to ensure screens update automatically when a notification is received or an action is performed.

@@ -68,6 +68,24 @@ function InnerApp() {
 
   // Initialize notifications
   useNotifications();
+  // Trigger Push Notification Registration
+  useEffect(() => {
+    const syncPushToken = async () => {
+      // Check if we have an active user session
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      
+      if (currentSession?.user) {
+        console.log("📱 User session detected, syncing push token...");
+        // This calls the registerForPushNotificationsAsync from notifications.ts
+        const { registerForPushNotificationsAsync } = require('./src/lib/notifications');
+        await registerForPushNotificationsAsync();
+      }
+    };
+
+    if (!authLoading && session) {
+      syncPushToken();
+    }
+  }, [authLoading, session]); // Runs when the app finishes loading auth or the user logs in
 
   // Initialize i18n
   useEffect(() => {

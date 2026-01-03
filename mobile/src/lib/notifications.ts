@@ -125,21 +125,33 @@ async function createNotificationChannels() {
 }
 
 /**
- * Save push token to user's profile
+ * Save push token to user's profile with better reliability
  */
 async function saveTokenToDatabase(token: string): Promise<void> {
-  const { data: sessionData } = await supabase.auth.getSession();
-  const userId = sessionData.session?.user.id;
+  // ✅ Switch to getUser() for better reliability in background/init tasks
+  const { data: { user } } = await supabase.auth.getUser();
+  const userId = user?.id;
 
-  if (!userId) return;
+  if (!userId) {
+    console.log('⚠️ No User ID found. User might not be logged in yet.');
+    return;
+  }
 
+  console.log('🔄 Syncing fresh token for user:', userId);
+  
   const { error } = await supabase
     .from('profiles')
-    .update({ expo_push_token: token })
+    .update({ 
+      expo_push_token: token,
+      // Optional: helpful to see in DB when it last synced
+      updated_at: new Date().toISOString() 
+    })
     .eq('id', userId);
 
   if (error) {
-    console.log('Error saving push token:', error);
+    console.log('❌ Error saving push token to Supabase:', error);
+  } else {
+    console.log('✅ Push token successfully updated in Supabase');
   }
 }
 
